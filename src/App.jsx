@@ -709,6 +709,22 @@ textarea::placeholder { color: #888; }
           )}
 
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={() => {
+              const next = model === "llama-3.3-70b-versatile" ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile";
+              setModel(next);
+              localStorage.setItem("kraft_model", next);
+            }} title={model === "llama-3.3-70b-versatile" ? "Switch to Fast mode" : "Switch to Power mode"} style={{
+              height: 34, padding: "0 12px", borderRadius: 8, cursor: "pointer",
+              background: model === "llama-3.3-70b-versatile" ? `${accent}18` : "rgba(16,185,129,0.12)",
+              border: model === "llama-3.3-70b-versatile" ? `1px solid ${accent}40` : "1px solid rgba(16,185,129,0.35)",
+              color: model === "llama-3.3-70b-versatile" ? accent : "#10b981",
+              display: "flex", alignItems: "center", gap: 6,
+              fontSize: 11, fontWeight: 700, letterSpacing: 0.5, fontFamily: "inherit",
+              transition: "all 0.2s"
+            }}>
+              <span className="ms" style={{fontSize:16}}>{model === "llama-3.3-70b-versatile" ? "bolt" : "eco"}</span>
+              {model === "llama-3.3-70b-versatile" ? "POWER" : "FAST"}
+            </button>
             <button onClick={() => setTheme(t => t === "dark" ? "light" : "dark")} title="Toggle theme" style={{
               width: 34, height: 34, borderRadius: 8, cursor: "pointer",
               background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
