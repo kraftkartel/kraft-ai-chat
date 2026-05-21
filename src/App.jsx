@@ -524,7 +524,7 @@ export default function App() {
         ? { ...c, messages: [...updatedMessages, { ...aiMsg, _key: msgKey }] }
         : c
       ));
-      // extractAndSaveMemory(text, aiContent);
+      // // extractAndSaveMemory(text, aiContent);
     } catch (e) {
       setChats(prev => prev.map(c => c.id === activeChatId
         ? { ...c, messages: [...updatedMessages, { role: "assistant", content: `**Error:** ${e.message}` }] }
