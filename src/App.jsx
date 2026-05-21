@@ -510,7 +510,7 @@ export default function App() {
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
-          max_tokens: 2048,
+          max_tokens: 1024,
           messages: [{ role: "system", content: buildSystemPrompt() }, ...history]
         })
       });
@@ -524,7 +524,7 @@ export default function App() {
         ? { ...c, messages: [...updatedMessages, { ...aiMsg, _key: msgKey }] }
         : c
       ));
-      extractAndSaveMemory(text, aiContent);
+      // extractAndSaveMemory(text, aiContent);
     } catch (e) {
       setChats(prev => prev.map(c => c.id === activeChatId
         ? { ...c, messages: [...updatedMessages, { role: "assistant", content: `**Error:** ${e.message}` }] }
