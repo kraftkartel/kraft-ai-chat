@@ -90,7 +90,7 @@ function StarCanvas({ responding }) {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 160) {
             const a = (1 - dist / 160) * (bright ? 0.18 : 0.07);
-            ctx.strokeStyle = `rgba(37,99,235,${a})`;
+            ctx.strokeStyle = `rgba(108,71,255,${a})`;
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -101,8 +101,8 @@ function StarCanvas({ responding }) {
 
       // Mouse glow
       const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 220);
-      grd.addColorStop(0, `rgba(37,99,235,${bright ? 0.06 : 0.025})`);
-      grd.addColorStop(1, "rgba(37,99,235,0)");
+      grd.addColorStop(0, `rgba(108,71,255,${bright ? 0.07 : 0.03})`);
+      grd.addColorStop(1, "rgba(108,71,255,0)");
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, W, H);
 
@@ -128,7 +128,7 @@ function StarCanvas({ responding }) {
         if (n.y < 0 || n.y > H) n.vy *= -1;
         ctx.beginPath();
         ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(96,165,250,${bright ? 0.5 : 0.2})`;
+        ctx.fillStyle = `rgba(167,139,250,${bright ? 0.5 : 0.2})`;
         ctx.fill();
       });
 
@@ -176,14 +176,14 @@ function renderMarkdown(text) {
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
             background: "#0d1117", borderRadius: "10px 10px 0 0",
-            padding: "6px 14px", borderBottom: "1px solid rgba(37,99,235,0.2)"
+            padding: "6px 14px", borderBottom: "1px solid rgba(108,71,255,0.2)"
           }}>
-            <span style={{ fontSize: 11, color: "#60a5fa", fontFamily: "monospace", letterSpacing: 1 }}>
+            <span style={{ fontSize: 11, color: "#a78bfa", fontFamily: "monospace", letterSpacing: 1 }}>
               {lang || "code"}
             </span>
             <button onClick={() => navigator.clipboard.writeText(codeLines.join("\n"))} style={{
-              background: "rgba(37,99,235,0.15)", border: "1px solid rgba(37,99,235,0.3)",
-              color: "#60a5fa", padding: "2px 10px", borderRadius: 6, fontSize: 11,
+              background: "rgba(108,71,255,0.15)", border: "1px solid rgba(108,71,255,0.3)",
+              color: "#a78bfa", padding: "2px 10px", borderRadius: 6, fontSize: 11,
               cursor: "pointer", fontFamily: "inherit"
             }}>copy</button>
           </div>
@@ -192,7 +192,7 @@ function renderMarkdown(text) {
             borderRadius: "0 0 10px 10px", overflowX: "auto",
             fontSize: 13, lineHeight: 1.7, color: "#e2e8f0",
             fontFamily: "'Fira Code', 'Cascadia Code', monospace",
-            border: "1px solid rgba(37,99,235,0.15)", borderTop: "none"
+            border: "1px solid rgba(108,71,255,0.12)", borderTop: "none"
           }}>
             {codeLines.join("\n")}
           </pre>
@@ -203,15 +203,15 @@ function renderMarkdown(text) {
     }
     // Heading
     if (line.startsWith("### ")) {
-      elements.push(<h3 key={i} style={{ color: "#93c5fd", fontSize: 15, fontWeight: 600, margin: "14px 0 6px", letterSpacing: 0.3 }}>{line.slice(4)}</h3>);
+      elements.push(<h3 key={i} style={{ color: "#c4b5fd", fontSize: 15, fontWeight: 600, margin: "14px 0 6px", letterSpacing: 0.3 }}>{line.slice(4)}</h3>);
     } else if (line.startsWith("## ")) {
-      elements.push(<h2 key={i} style={{ color: "#60a5fa", fontSize: 17, fontWeight: 700, margin: "16px 0 8px" }}>{line.slice(3)}</h2>);
+      elements.push(<h2 key={i} style={{ color: "#a78bfa", fontSize: 17, fontWeight: 700, margin: "16px 0 8px" }}>{line.slice(3)}</h2>);
     } else if (line.startsWith("# ")) {
-      elements.push(<h1 key={i} style={{ color: "#3b82f6", fontSize: 20, fontWeight: 800, margin: "18px 0 10px" }}>{line.slice(2)}</h1>);
+      elements.push(<h1 key={i} style={{ color: "#ede9fe", fontSize: 20, fontWeight: 800, margin: "18px 0 10px" }}>{line.slice(2)}</h1>);
     } else if (line.startsWith("- ") || line.startsWith("• ")) {
       elements.push(
         <div key={i} style={{ display: "flex", gap: 8, margin: "3px 0", paddingLeft: 4 }}>
-          <span style={{ color: "#3b82f6", marginTop: 2, flexShrink: 0 }}>▸</span>
+          <span style={{ color: "#7c3aed", marginTop: 2, flexShrink: 0 }}>▸</span>
           <span>{inlineFormat(line.slice(2))}</span>
         </div>
       );
@@ -228,8 +228,8 @@ function renderMarkdown(text) {
 function inlineFormat(text) {
   const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
   return parts.map((p, i) => {
-    if (/^\*\*.*\*\*$/.test(p)) return <strong key={i} style={{ color: "#93c5fd", fontWeight: 600 }}>{p.slice(2, -2)}</strong>;
-    if (/^`.*`$/.test(p)) return <code key={i} style={{ background: "rgba(37,99,235,0.15)", color: "#60a5fa", padding: "1px 6px", borderRadius: 4, fontSize: "0.9em", fontFamily: "monospace" }}>{p.slice(1, -1)}</code>;
+    if (/^\*\*.*\*\*$/.test(p)) return <strong key={i} style={{ color: "#c4b5fd", fontWeight: 600 }}>{p.slice(2, -2)}</strong>;
+    if (/^`.*`$/.test(p)) return <code key={i} style={{ background: "rgba(108,71,255,0.12)", color: "#a78bfa", padding: "1px 6px", borderRadius: 4, fontSize: "0.9em", fontFamily: "monospace" }}>{p.slice(1, -1)}</code>;
     return p;
   });
 }
@@ -246,7 +246,7 @@ function ThinkingDots() {
           }} />
         ))}
       </div>
-      <span style={{ fontSize: 12, color: "#3b82f6", letterSpacing: 2, fontWeight: 500, opacity: 0.8 }}>
+      <span style={{ fontSize: 12, color: "#a78bfa", letterSpacing: 2, fontWeight: 500, opacity: 0.7 }}>
         THINKING
       </span>
     </div>
@@ -264,16 +264,16 @@ function Message({ msg, isNew }) {
       {!isUser && (
         <div style={{
           width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-          background: "linear-gradient(135deg, #1e3a8a, #2563eb)",
-          border: "1px solid rgba(37,99,235,0.5)",
+          background: "linear-gradient(135deg, #1a1a2e, #6c47ff)",
+          border: "1px solid rgba(108,71,255,0.5)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 12, fontWeight: 800, color: "#bfdbfe", marginTop: 2,
-          boxShadow: "0 0 12px rgba(37,99,235,0.3)"
+          fontSize: 12, fontWeight: 800, color: "#ede9fe", marginTop: 2,
+          boxShadow: "0 0 12px rgba(108,71,255,0.3)"
         }}>K</div>
       )}
       <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: 4 }}>
         {!isUser && (
-          <span style={{ fontSize: 11, color: "#3b82f6", letterSpacing: 2, fontWeight: 600, paddingLeft: 2 }}>
+          <span style={{ fontSize: 11, color: "#6c47ff", letterSpacing: 2, fontWeight: 600, paddingLeft: 2, opacity: 0.8 }}>
             KRAFT AI
           </span>
         )}
@@ -281,15 +281,15 @@ function Message({ msg, isNew }) {
           padding: "13px 18px",
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
-            ? "linear-gradient(135deg, rgba(37,99,235,0.25), rgba(59,130,246,0.15))"
-            : "rgba(255,255,255,0.03)",
+            ? "linear-gradient(135deg, rgba(108,71,255,0.18), rgba(167,139,250,0.08))"
+            : "rgba(255,255,255,0.025)",
           border: isUser
-            ? "1px solid rgba(37,99,235,0.4)"
-            : "1px solid rgba(255,255,255,0.06)",
-          color: isUser ? "#bfdbfe" : "#cbd5e1",
+            ? "1px solid rgba(108,71,255,0.3)"
+            : "1px solid rgba(255,255,255,0.05)",
+          color: isUser ? "#ddd6fe" : "#c9d1d9",
           fontSize: 14.5, lineHeight: 1.75,
           backdropFilter: "blur(8px)",
-          boxShadow: isUser ? "0 4px 24px rgba(37,99,235,0.15)" : "none"
+          boxShadow: isUser ? "0 4px 24px rgba(108,71,255,0.12)" : "none"
         }}>
           {isUser ? msg.content : renderMarkdown(msg.content)}
         </div>
@@ -297,9 +297,9 @@ function Message({ msg, isNew }) {
       {isUser && (
         <div style={{
           width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-          background: "rgba(37,99,235,0.2)", border: "1px solid rgba(37,99,235,0.35)",
+          background: "rgba(108,71,255,0.15)", border: "1px solid rgba(108,71,255,0.3)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 12, fontWeight: 700, color: "#60a5fa", marginTop: 2
+          fontSize: 12, fontWeight: 700, color: "#a78bfa", marginTop: 2
         }}>U</div>
       )}
     </div>
@@ -307,21 +307,32 @@ function Message({ msg, isNew }) {
 }
 
 export default function App() {
-  const [chats, setChats] = useState([
+  const savedChats = (() => { try { return JSON.parse(localStorage.getItem("kraft_chats")) || null; } catch { return null; } })();
+  const savedActiveId = (() => { try { return JSON.parse(localStorage.getItem("kraft_active_id")) || 1; } catch { return 1; } })();
+  const [chats, setChats] = useState(savedChats || [
     { id: 1, title: "New conversation", messages: [
       { role: "assistant", content: "What's good. Talk to me." }
     ]}
   ]);
-  const [activeChatId, setActiveChatId] = useState(1);
+  const [activeChatId, setActiveChatId] = useState(savedActiveId);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 640);
   const [newMsgId, setNewMsgId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const nextId = useRef(2);
 
   const activeChat = chats.find(c => c.id === activeChatId);
+
+  useEffect(() => {
+    localStorage.setItem("kraft_chats", JSON.stringify(chats));
+  }, [chats]);
+
+  useEffect(() => {
+    localStorage.setItem("kraft_active_id", JSON.stringify(activeChatId));
+  }, [activeChatId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -333,6 +344,19 @@ export default function App() {
       textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 160) + "px";
     }
   }, [input]);
+
+  const deleteChat = useCallback((id) => {
+    setChats(prev => {
+      const next = prev.filter(c => c.id !== id);
+      if (next.length === 0) {
+        const fresh = [{ id: Date.now(), title: "New conversation", messages: [{ role: "assistant", content: "What's good. Talk to me." }] }];
+        setActiveChatId(fresh[0].id);
+        return fresh;
+      }
+      if (id === activeChatId) setActiveChatId(next[next.length - 1].id);
+      return next;
+    });
+  }, [activeChatId]);
 
   const newChat = useCallback(() => {
     const id = nextId.current++;
@@ -423,7 +447,8 @@ export default function App() {
         textarea { resize: none; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(37,99,235,0.25); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(108,71,255,0.2); border-radius: 4px; }
+        input::placeholder { color: #374151; }
         button:hover { filter: brightness(1.15); }
       `}</style>
 
@@ -440,46 +465,67 @@ export default function App() {
         position: "relative", zIndex: 2,
         flexShrink: 0
       }}>
-        <div style={{ padding: "20px 16px 12px", borderBottom: "1px solid rgba(37,99,235,0.1)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: "50%",
-              background: "linear-gradient(135deg, #1a1a2e, #6c47ff)",
-              border: "1px solid rgba(108,71,255,0.5)",
+        <div style={{ padding: "18px 14px 12px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: "50%",
+                background: "linear-gradient(135deg, #1a1a2e, #6c47ff)",
+                border: "1px solid rgba(108,71,255,0.5)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 11, fontWeight: 800, color: "#ede9fe",
+                boxShadow: "0 0 18px rgba(108,71,255,0.35)"
+              }}>K</div>
+              <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Syne', sans-serif" }}>KRAFT AI</span>
+            </div>
+            <button onClick={newChat} title="New chat" style={{
+              width: 32, height: 32, borderRadius: 9,
+              background: "rgba(108,71,255,0.15)",
+              border: "1px solid rgba(108,71,255,0.3)",
+              color: "#a78bfa", fontSize: 20, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, fontWeight: 800, color: "#ede9fe",
-              boxShadow: "0 0 18px rgba(108,71,255,0.35)"
-            }}>K</div>
-            <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Syne', sans-serif" }}>KRAFT AI</span>
+              transition: "all 0.2s", lineHeight: 1
+            }}>+</button>
           </div>
-          <button onClick={newChat} style={{
-            width: "100%", padding: "10px 14px",
-            background: "linear-gradient(135deg, rgba(37,99,235,0.2), rgba(59,130,246,0.1))",
-            border: "1px solid rgba(37,99,235,0.35)", borderRadius: 12,
-            color: "#93c5fd", fontSize: 13, fontWeight: 600,
-            cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
-            letterSpacing: 0.5, transition: "all 0.2s"
-          }}>
-            <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> New Chat
-          </button>
+          <div style={{ position: "relative" }}>
+            <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#4b5563", pointerEvents: "none" }}>🔍</span>
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search chats..."
+              style={{
+                width: "100%", background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10,
+                color: "#e2e8f0", padding: "8px 10px 8px 32px",
+                fontSize: 12, fontFamily: "inherit", outline: "none"
+              }}
+            />
+          </div>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }}>
-          <div style={{ fontSize: 10, color: "#3b82f6", letterSpacing: 3, fontWeight: 600, padding: "6px 8px 10px" }}>CONVERSATIONS</div>
-          {chats.map(c => (
-            <button key={c.id} onClick={() => setActiveChatId(c.id)} style={{
-              width: "100%", textAlign: "left", padding: "10px 12px",
-              background: c.id === activeChatId ? "rgba(37,99,235,0.15)" : "transparent",
-              border: c.id === activeChatId ? "1px solid rgba(37,99,235,0.25)" : "1px solid transparent",
-              borderRadius: 10, color: c.id === activeChatId ? "#93c5fd" : "#64748b",
-              fontSize: 13, cursor: "pointer", marginBottom: 3,
-              transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-              fontFamily: "inherit"
-            }}>
-              {c.title}
-            </button>
+        <div style={{ flex: 1, overflowY: "auto", padding: "8px 8px" }}>
+          <div style={{ fontSize: 10, color: "#6c47ff", letterSpacing: 3, fontWeight: 700, padding: "8px 8px 10px", opacity: 0.7 }}>CONVERSATIONS</div>
+          {chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase())).map(c => (
+            <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+              <button onClick={() => setActiveChatId(c.id)} style={{
+                flex: 1, textAlign: "left", padding: "9px 10px",
+                background: c.id === activeChatId ? "rgba(108,71,255,0.12)" : "transparent",
+                border: c.id === activeChatId ? "1px solid rgba(108,71,255,0.22)" : "1px solid transparent",
+                borderRadius: 9, color: c.id === activeChatId ? "#c4b5fd" : "#64748b",
+                fontSize: 12.5, cursor: "pointer",
+                transition: "all 0.18s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                fontFamily: "inherit", minWidth: 0
+              }}>{c.title}</button>
+              <button onClick={() => deleteChat(c.id)} title="Delete" style={{
+                flexShrink: 0, width: 26, height: 26, borderRadius: 7,
+                background: "transparent", border: "none",
+                color: "#374151", fontSize: 13, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 0.15s"
+              }}>✕</button>
+            </div>
           ))}
         </div>
-        <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(37,99,235,0.1)", fontSize: 11, color: "#1e3a8a", letterSpacing: 1 }}>
+        <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(255,255,255,0.04)", fontSize: 10, color: "#374151", letterSpacing: 1.5, fontWeight: 600 }}>
           KRAFT AI · KIGALI, RWANDA
         </div>
       </div>
@@ -490,13 +536,13 @@ export default function App() {
         {/* Topbar */}
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
-          borderBottom: "1px solid rgba(37,99,235,0.1)",
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
           background: "rgba(14,14,17,0.92)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
-            background: "rgba(37,99,235,0.1)", border: "1px solid rgba(37,99,235,0.08)",
-            borderRadius: 8, color: "#60a5fa", width: 34, height: 34,
+            background: "rgba(108,71,255,0.08)", border: "1px solid rgba(108,71,255,0.15)",
+            borderRadius: 8, color: "#a78bfa", width: 34, height: 34,
             cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
             transition: "all 0.2s"
           }}>☰</button>
@@ -522,15 +568,15 @@ export default function App() {
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, animation: "fadeIn 0.3s ease" }}>
               <div style={{
                 width: 32, height: 32, borderRadius: "50%",
-                background: "linear-gradient(135deg, #1e3a8a, #2563eb)",
-                border: "1px solid rgba(37,99,235,0.5)",
+                background: "linear-gradient(135deg, #1a1a2e, #6c47ff)",
+                border: "1px solid rgba(108,71,255,0.5)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 12, fontWeight: 800, color: "#bfdbfe",
-                boxShadow: "0 0 16px rgba(37,99,235,0.4), 0 0 32px rgba(37,99,235,0.15)"
+                fontSize: 12, fontWeight: 800, color: "#ede9fe",
+                boxShadow: "0 0 16px rgba(108,71,255,0.4), 0 0 32px rgba(108,71,255,0.15)"
               }}>K</div>
               <div style={{
                 padding: "12px 18px", borderRadius: "6px 20px 20px 20px",
-                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(37,99,235,0.15)"
+                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(108,71,255,0.15)"
               }}>
                 <ThinkingDots />
               </div>
@@ -543,7 +589,7 @@ export default function App() {
         <div style={{
           padding: "12px 16px 16px",
           background: "rgba(14,14,17,0.95)", backdropFilter: "blur(24px)",
-          borderTop: "1px solid rgba(37,99,235,0.1)"
+          borderTop: "1px solid rgba(255,255,255,0.05)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
@@ -552,7 +598,7 @@ export default function App() {
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
-              boxShadow: "0 0 0 1px rgba(37,99,235,0.05), 0 8px 32px rgba(0,0,0,0.3)",
+              boxShadow: "0 0 0 1px rgba(108,71,255,0.06), 0 8px 32px rgba(0,0,0,0.3)",
               transition: "border-color 0.2s"
             }}
               onFocus={() => {}}
@@ -582,14 +628,14 @@ export default function App() {
                 style={{
                   width: 40, height: 40, borderRadius: 12, flexShrink: 0,
                   background: loading || !input.trim()
-                    ? "rgba(37,99,235,0.1)"
-                    : "linear-gradient(135deg, #2563eb, #3b82f6)",
-                  border: "1px solid rgba(37,99,235,0.3)",
-                  color: loading || !input.trim() ? "#1e40af" : "#fff",
+                    ? "rgba(108,71,255,0.08)"
+                    : "linear-gradient(135deg, #6c47ff, #a78bfa)",
+                  border: "1px solid rgba(108,71,255,0.25)",
+                  color: loading || !input.trim() ? "#4b3a8a" : "#fff",
                   cursor: loading || !input.trim() ? "not-allowed" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 18, transition: "all 0.2s",
-                  boxShadow: loading || !input.trim() ? "none" : "0 0 16px rgba(37,99,235,0.4)"
+                  boxShadow: loading || !input.trim() ? "none" : "0 0 20px rgba(108,71,255,0.45)"
                 }}
               >
                 {loading ? "…" : "↑"}
