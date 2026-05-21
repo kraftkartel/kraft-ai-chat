@@ -345,7 +345,6 @@ function ThinkingDots({ accent }) {
       <span style={{ fontSize: 12, color: accent, letterSpacing: 2, fontWeight: 500, opacity: 0.7 }}>
         THINKING
       </span>
-    <CookieBanner isDark={isDark} accent={accent} />
     </div>
   );
 }
@@ -419,7 +418,6 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
           fontSize: 12, fontWeight: 700, color: "#a78bfa", marginTop: 2
         }}>U</div>
       )}
-    <CookieBanner isDark={isDark} accent={accent} />
     </div>
   );
 }
@@ -690,7 +688,7 @@ export default function App() {
   return (
     <div style={{
       position: "fixed", inset: 0,
-      background: isDark ? "#0b0b0e" : "#C8C5C2",
+      background: isDark ? "#0b0b0e" : "#f0ede8",
       fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
       color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
     }}>
@@ -740,8 +738,8 @@ textarea::placeholder { color: #888; }
         minWidth: sidebarOpen ? 260 : 0,
         overflow: "hidden",
         transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
-        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(195,192,189,0.99)",
-        borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.10)") : "none",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(245,242,237,0.99)",
+        borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
         position: "relative",
@@ -820,7 +818,7 @@ textarea::placeholder { color: #888; }
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(190,187,184,0.97)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(248,245,240,0.97)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -920,7 +918,7 @@ textarea::placeholder { color: #888; }
         {showSettings && (
           <div style={{
             position: "absolute", top: 64, right: 16, zIndex: 50, width: 300,
-            background: isDark ? "#16161e" : "#D2CFCC",
+            background: isDark ? "#16161e" : "#faf8f5",
             border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
             borderRadius: 16, padding: "20px",
             boxShadow: "0 20px 60px rgba(0,0,0,0.4)"
@@ -1096,14 +1094,14 @@ textarea::placeholder { color: #888; }
         {/* Input */}
         <div style={{
           padding: "12px 16px 16px",
-          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(185,182,179,0.98)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(248,245,240,0.98)", backdropFilter: "blur(24px)",
           borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.09)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
               display: "flex", alignItems: "flex-end", gap: 12,
-              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(255,254,253,0.95)",
-              border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.13)",
+              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(255,255,255,0.98)",
+              border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.10)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
               boxShadow: "0 0 0 1px rgba(108,71,255,0.06), 0 8px 32px rgba(0,0,0,0.3)",
