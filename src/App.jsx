@@ -512,7 +512,7 @@ export default function App() {
         },
         body: JSON.stringify({
           model: model,
-          max_tokens: 600,
+          max_tokens: 1800,
           messages: [{ role: "system", content: buildSystemPrompt() }, ...history]
         })
       });
