@@ -294,7 +294,7 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
       )}
       <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: 4 }}>
         {!isUser && (
-          <span style={{ fontSize: 11, color: "#6c47ff", letterSpacing: 2, fontWeight: 600, paddingLeft: 2, opacity: 0.8 }}>
+          <span style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#4a2db5", letterSpacing: 2, fontWeight: 700, paddingLeft: 2 }}>
             KRAFT AI
           </span>
         )}
@@ -392,6 +392,11 @@ export default function App() {
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const nextId = useRef(2);
+
+  useEffect(() => {
+    const savedFont = localStorage.getItem("kraft_font");
+    if (savedFont) document.body.style.fontFamily = savedFont;
+  }, []);
 
   const activeChat = chats.find(c => c.id === activeChatId);
   const isNewChat = activeChat?.messages.length === 1 && activeChat.messages[0].role === "assistant";
@@ -526,7 +531,8 @@ export default function App() {
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(108,71,255,0.2); border-radius: 4px; }
-        input::placeholder { color: #374151; }
+        input::placeholder { color: #888; }
+textarea::placeholder { color: #888; }
         button:hover { filter: brightness(1.15); }
       `}</style>
 
@@ -590,14 +596,14 @@ export default function App() {
           </div>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "8px 8px" }}>
-          <div style={{ fontSize: 10, color: "#6c47ff", letterSpacing: 3, fontWeight: 700, padding: "8px 8px 10px", opacity: 0.7 }}>CONVERSATIONS</div>
+          <div style={{ fontSize: 10, color: isDark ? "#6c47ff" : "#3a1fa8", letterSpacing: 3, fontWeight: 700, padding: "8px 8px 10px" }}>CONVERSATIONS</div>
           {chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase())).map(c => (
             <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
               <button onClick={() => setActiveChatId(c.id)} style={{
                 flex: 1, textAlign: "left", padding: "9px 10px",
                 background: c.id === activeChatId ? "rgba(108,71,255,0.12)" : "transparent",
                 border: c.id === activeChatId ? "1px solid rgba(108,71,255,0.22)" : "1px solid transparent",
-                borderRadius: 9, color: c.id === activeChatId ? accent : isDark ? "#64748b" : "#1a1714",
+                borderRadius: 9, color: c.id === activeChatId ? (isDark ? accent : "#3a1fa8") : isDark ? "#64748b" : "#2a2520",
                 fontSize: 12.5, cursor: "pointer",
                 transition: "all 0.18s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 fontFamily: "inherit", minWidth: 0
@@ -605,14 +611,14 @@ export default function App() {
               <button onClick={() => deleteChat(c.id)} title="Delete" style={{
                 flexShrink: 0, width: 26, height: 26, borderRadius: 7,
                 background: "transparent", border: "none",
-                color: "#374151", fontSize: 13, cursor: "pointer",
+                color: isDark ? "#4b5563" : "#2a2520", fontSize: 13, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 transition: "all 0.15s"
               }}>✕</button>
             </div>
           ))}
         </div>
-        <div style={{ padding: "12px 14px", borderTop: isDark ? "1px solid rgba(255,255,255,0.04)" : "1px solid rgba(0,0,0,0.06)", fontSize: 10, color: isDark ? "#374151" : "#9ca3af", letterSpacing: 1.5, fontWeight: 600 }}>
+        <div style={{ padding: "12px 14px", borderTop: isDark ? "1px solid rgba(255,255,255,0.04)" : "1px solid rgba(0,0,0,0.06)", fontSize: 10, color: isDark ? "#4b5563" : "#2a2520", letterSpacing: 1.5, fontWeight: 600 }}>
           KRAFT AI · KIGALI, RWANDA
         </div>
       </div>
@@ -720,7 +726,7 @@ export default function App() {
 
             {/* Theme */}
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 10, opacity: 0.8 }}>APPEARANCE</div>
+              <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>APPEARANCE</div>
               <div style={{ display: "flex", gap: 8 }}>
                 {["dark", "light"].map(t => (
                   <button key={t} onClick={() => setTheme(t)} style={{
@@ -736,7 +742,7 @@ export default function App() {
 
             {/* Accent color */}
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 10, opacity: 0.8 }}>ACCENT COLOR</div>
+              <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>ACCENT COLOR</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {["#6c47ff","#e11d48","#0ea5e9","#10b981","#f59e0b","#ec4899","#64748b","#ffffff"].map(c => (
                   <button key={c} onClick={() => setAccent(c)} style={{
@@ -758,7 +764,7 @@ export default function App() {
 
             {/* Font size */}
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 10, opacity: 0.8 }}>CHAT FONT SIZE</div>
+              <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>CHAT FONT SIZE</div>
               <div style={{ display: "flex", gap: 8 }}>
                 {[["S","13px"],["M","14.5px"],["L","16px"]].map(([label, size]) => (
                   <button key={label} onClick={() => localStorage.setItem("kraft_fontsize", size)} style={{
@@ -771,9 +777,30 @@ export default function App() {
               </div>
             </div>
 
+            {/* Font Family */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>FONT</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[
+                  ["-apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif", "SF Pro (Apple)"],
+                  ["'New York', Georgia, serif", "New York (Apple Serif)"],
+                  ["'SF Mono', 'Fira Code', monospace", "SF Mono"],
+                  ["'Helvetica Neue', Helvetica, sans-serif", "Helvetica Neue"],
+                  ["Georgia, 'Times New Roman', serif", "Georgia"],
+                ].map(([val, label]) => (
+                  <button key={val} onClick={() => { localStorage.setItem("kraft_font", val); document.documentElement.style.setProperty("--kraft-font", val); }} style={{
+                    padding: "8px 12px", borderRadius: 9, cursor: "pointer", textAlign: "left",
+                    background: (localStorage.getItem("kraft_font") || "").includes(val.split(",")[0].replace(/'/g,"").trim()) ? (isDark ? "rgba(108,71,255,0.15)" : "rgba(58,31,168,0.1)") : isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
+                    border: (localStorage.getItem("kraft_font") || "").includes(val.split(",")[0].replace(/'/g,"").trim()) ? `1px solid ${isDark ? "rgba(108,71,255,0.35)" : "rgba(58,31,168,0.3)"}` : isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.09)",
+                    color: isDark ? "#e2e8f0" : "#1a1714", fontSize: 12, fontFamily: val, fontWeight: 500
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
+
             {/* Clear memory */}
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 10, opacity: 0.8 }}>MEMORY</div>
+              <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>MEMORY</div>
               <button onClick={() => {
                 if (window.confirm("Clear all conversations?")) {
                   localStorage.removeItem("kraft_chats");
@@ -789,8 +816,8 @@ export default function App() {
 
             {/* Model info */}
             <div style={{ paddingTop: 14, borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)" }}>
-              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 8, opacity: 0.8 }}>MODEL</div>
-              <div style={{ fontSize: 12, color: isDark ? "#64748b" : "#9ca3af", lineHeight: 1.7 }}>
+              <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 8 }}>MODEL</div>
+              <div style={{ fontSize: 12, color: isDark ? "#64748b" : "#3a3530", lineHeight: 1.7 }}>
                 <div>Engine · LLaMA 3.3 70B</div>
                 <div>Context · 128k tokens</div>
                 <div>Built by · Kraft Kartel</div>
