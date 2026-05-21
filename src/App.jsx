@@ -499,7 +499,8 @@ export default function App() {
 
     const history = updatedMessages
       .filter((m, i) => !(m.role === "assistant" && i === 0))
-      .map(m => ({ role: m.role, content: m.content }));
+      .map(m => ({ role: m.role, content: m.content }))
+      .slice(-10);
 
     try {
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
