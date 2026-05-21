@@ -455,7 +455,6 @@ function MicButton({ onTranscript, accent, voiceSettings }) {
     rec.onresult = e => {
       const t = Array.from(e.results).map(r => r[0].transcript).join(" ");
       onTranscript(t);
-      speakText(t, voiceSettings);
     };
     rec.onend = () => setListening(false);
     rec.onerror = () => setListening(false);
