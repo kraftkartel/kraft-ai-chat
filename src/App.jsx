@@ -76,38 +76,63 @@ function StarCanvas({ responding }) {
     canvas.width = W; canvas.height = H;
     let mouse = { x: W / 2, y: H / 2 };
 
-    const stars = Array.from({ length: 180 }, () => ({
+    const stars = Array.from({ length: 260 }, () => ({
       x: Math.random() * W, y: Math.random() * H,
-      r: Math.random() * 1.5 + 0.3,
-      alpha: Math.random() * 0.6 + 0.1,
-      speed: Math.random() * 0.006 + 0.001,
-      dir: Math.random() > 0.5 ? 1 : -1,
-      vx: (Math.random() - 0.5) * 0.08,
-      vy: (Math.random() - 0.5) * 0.08,
+      r: Math.random() * 1.8 + 0.2,
+      baseAlpha: Math.random() * 0.5 + 0.1,
+      alpha: 0,
+      twinkleSpeed: Math.random() * 0.012 + 0.003,
+      twinkleOffset: Math.random() * Math.PI * 2,
+      vx: (Math.random() - 0.5) * 0.04,
+      vy: (Math.random() - 0.5) * 0.04,
+      trail: [],
     }));
 
-    const nodes = Array.from({ length: 28 }, () => ({
+    const shootingStars = [];
+    let lastShoot = 0;
+
+    const nodes = Array.from({ length: 32 }, () => ({
       x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
+      pulse: Math.random() * Math.PI * 2,
     }));
 
+    let t = 0;
     const onMove = e => { mouse.x = e.clientX; mouse.y = e.clientY; };
     window.addEventListener("mousemove", onMove);
 
     let animId;
     function draw() {
+      t += 0.016;
       const bright = stateRef.current.responding;
       ctx.clearRect(0, 0, W, H);
 
-      // Neural lines
-      ctx.lineWidth = 0.4;
+      // Ambient nebula glow
+      const nebula = ctx.createRadialGradient(W*0.3, H*0.4, 0, W*0.3, H*0.4, W*0.5);
+      nebula.addColorStop(0, `rgba(108,71,255,${bright ? 0.04 : 0.018})`);
+      nebula.addColorStop(0.5, `rgba(60,40,180,${bright ? 0.02 : 0.008})`);
+      nebula.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = nebula;
+      ctx.fillRect(0, 0, W, H);
+
+      const nebula2 = ctx.createRadialGradient(W*0.75, H*0.65, 0, W*0.75, H*0.65, W*0.4);
+      nebula2.addColorStop(0, `rgba(80,30,160,${bright ? 0.03 : 0.012})`);
+      nebula2.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = nebula2;
+      ctx.fillRect(0, 0, W, H);
+
+      // Neural lines with depth
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 160) {
-            const a = (1 - dist / 160) * (bright ? 0.18 : 0.07);
-            ctx.strokeStyle = `rgba(108,71,255,${a})`;
+          if (dist < 180) {
+            const a = (1 - dist / 180) * (bright ? 0.22 : 0.08);
+            const grad = ctx.createLinearGradient(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+            grad.addColorStop(0, `rgba(108,71,255,${a})`);
+            grad.addColorStop(1, `rgba(140,100,255,${a * 0.5})`);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = bright ? 0.6 : 0.35;
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -116,36 +141,90 @@ function StarCanvas({ responding }) {
         }
       }
 
-      // Mouse glow
-      const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 220);
-      grd.addColorStop(0, `rgba(108,71,255,${bright ? 0.07 : 0.03})`);
-      grd.addColorStop(1, "rgba(108,71,255,0)");
+      // Mouse glow — reactive
+      const mouseDist = Math.hypot(mouse.x - W/2, mouse.y - H/2);
+      const glowR = 180 + Math.sin(t * 1.5) * 30;
+      const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, glowR);
+      grd.addColorStop(0, `rgba(120,80,255,${bright ? 0.1 : 0.045})`);
+      grd.addColorStop(0.4, `rgba(80,50,200,${bright ? 0.04 : 0.015})`);
+      grd.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, W, H);
 
-      // Stars
+      // Stars with twinkle and parallax
       stars.forEach(s => {
-        s.alpha += s.speed * s.dir;
-        if (s.alpha >= (bright ? 0.95 : 0.7) || s.alpha <= 0.05) s.dir *= -1;
-        const px = (s.x - mouse.x) * 0.003;
-        const py = (s.y - mouse.y) * 0.003;
+        s.twinkleOffset += s.twinkleSpeed;
+        s.alpha = s.baseAlpha + Math.sin(s.twinkleOffset) * s.baseAlpha * 0.6;
+        s.alpha = Math.max(0.02, Math.min(1, s.alpha * (bright ? 1.4 : 1)));
+        const px = (s.x - mouse.x) * 0.004 * s.r;
+        const py = (s.y - mouse.y) * 0.004 * s.r;
+        const rx = s.x + px, ry = s.y + py;
+
+        // Star glow for brighter stars
+        if (s.r > 1.2) {
+          const sg = ctx.createRadialGradient(rx, ry, 0, rx, ry, s.r * 3.5);
+          sg.addColorStop(0, `rgba(200,190,255,${s.alpha * 0.4})`);
+          sg.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = sg;
+          ctx.beginPath();
+          ctx.arc(rx, ry, s.r * 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
         ctx.beginPath();
-        ctx.arc(s.x + px, s.y + py, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
+        ctx.arc(rx, ry, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(235,225,255,${s.alpha})`;
         ctx.fill();
+
         s.x += s.vx; s.y += s.vy;
         if (s.x < 0) s.x = W; if (s.x > W) s.x = 0;
         if (s.y < 0) s.y = H; if (s.y > H) s.y = 0;
       });
 
-      // Node dots
+      // Shooting stars
+      if (t - lastShoot > (bright ? 2.5 : 6) + Math.random() * 4) {
+        lastShoot = t;
+        shootingStars.push({
+          x: Math.random() * W * 0.7,
+          y: Math.random() * H * 0.4,
+          vx: 6 + Math.random() * 5,
+          vy: 2 + Math.random() * 3,
+          alpha: 1, len: 80 + Math.random() * 60, life: 1
+        });
+      }
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const ss = shootingStars[i];
+        ss.x += ss.vx; ss.y += ss.vy; ss.life -= 0.025;
+        if (ss.life <= 0) { shootingStars.splice(i, 1); continue; }
+        const sg = ctx.createLinearGradient(ss.x, ss.y, ss.x - ss.vx * 10, ss.y - ss.vy * 10);
+        sg.addColorStop(0, `rgba(220,210,255,${ss.life * 0.9})`);
+        sg.addColorStop(1, "rgba(108,71,255,0)");
+        ctx.strokeStyle = sg;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(ss.x, ss.y);
+        ctx.lineTo(ss.x - ss.len * (ss.vx / 8), ss.y - ss.len * (ss.vy / 8));
+        ctx.stroke();
+      }
+
+      // Node dots with pulse
       nodes.forEach(n => {
+        n.pulse += 0.03;
         n.x += n.vx; n.y += n.vy;
         if (n.x < 0 || n.x > W) n.vx *= -1;
         if (n.y < 0 || n.y > H) n.vy *= -1;
+        const pr = 1.5 + Math.sin(n.pulse) * 0.5;
+        const pa = bright ? 0.55 : 0.2;
+        const ng = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, pr * 4);
+        ng.addColorStop(0, `rgba(167,139,250,${pa})`);
+        ng.addColorStop(1, "rgba(108,71,255,0)");
+        ctx.fillStyle = ng;
         ctx.beginPath();
-        ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(167,139,250,${bright ? 0.5 : 0.2})`;
+        ctx.arc(n.x, n.y, pr * 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, pr, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(200,180,255,${pa * 1.2})`;
         ctx.fill();
       });
 
@@ -266,6 +345,7 @@ function ThinkingDots({ accent }) {
       <span style={{ fontSize: 12, color: accent, letterSpacing: 2, fontWeight: 500, opacity: 0.7 }}>
         THINKING
       </span>
+    <CookieBanner isDark={isDark} accent={accent} />
     </div>
   );
 }
@@ -310,7 +390,7 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
       )}
       <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: 4 }}>
         {!isUser && (
-          <span style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#4a2db5", letterSpacing: 2, fontWeight: 700, paddingLeft: 2 }}>
+          <span style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#1a1714", letterSpacing: 2, fontWeight: 700, paddingLeft: 2 }}>
             KRAFT AI
           </span>
         )}
@@ -323,7 +403,7 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
           border: isUser
             ? `1px solid ${accent}40`
             : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)",
-          color: isUser ? (isDark ? "#ddd6fe" : "#2a0a4a") : (isDark ? "#c9d1d9" : "#0f0d12"),
+          color: isUser ? (isDark ? "#ddd6fe" : "#1a1714") : (isDark ? "#c9d1d9" : "#0f0d12"),
           fontSize: 14.5, lineHeight: 1.75,
           backdropFilter: "blur(8px)",
           boxShadow: isUser ? `0 4px 24px ${accent}20` : "none"
@@ -339,6 +419,7 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
           fontSize: 12, fontWeight: 700, color: "#a78bfa", marginTop: 2
         }}>U</div>
       )}
+    <CookieBanner isDark={isDark} accent={accent} />
     </div>
   );
 }
@@ -396,6 +477,50 @@ function MicButton({ onTranscript, accent, voiceSettings }) {
     }}>
       <span className="ms" style={{fontSize:20}}>{listening ? "stop_circle" : "mic"}</span>
     </button>
+  );
+}
+
+function CookieBanner({ isDark, accent }) {
+  const [visible, setVisible] = useState(() => !localStorage.getItem("kraft_cookies"));
+  if (!visible) return null;
+  return (
+    <div style={{
+      position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+      zIndex: 999, width: "min(520px, calc(100vw - 32px))",
+      background: isDark ? "rgba(18,18,24,0.97)" : "rgba(235,232,229,0.98)",
+      border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.12)",
+      borderRadius: 18, padding: "18px 22px",
+      backdropFilter: "blur(24px)",
+      boxShadow: "0 8px 40px rgba(0,0,0,0.35)",
+      display: "flex", alignItems: "center", gap: 16,
+      animation: "msgIn 0.4s cubic-bezier(0.34,1.56,0.64,1)"
+    }}>
+      <span className="ms" style={{ fontSize: 28, color: accent, flexShrink: 0 }}>cookie</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? "#e2e8f0" : "#1a1714", marginBottom: 4 }}>
+          We use cookies
+        </div>
+        <div style={{ fontSize: 11.5, color: isDark ? "#64748b" : "#3a3530", lineHeight: 1.6 }}>
+          KRAFT AI uses local storage to save your chats, preferences, and memory. No data is sent to third parties.
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
+        <button onClick={() => { localStorage.setItem("kraft_cookies", "accepted"); setVisible(false); }} style={{
+          padding: "8px 18px", borderRadius: 10, cursor: "pointer",
+          background: `linear-gradient(135deg, ${accent}, ${accent}cc)`,
+          border: "none", color: "#fff", fontSize: 12, fontWeight: 700,
+          fontFamily: "inherit", whiteSpace: "nowrap",
+          boxShadow: `0 0 16px ${accent}50`
+        }}>Accept</button>
+        <button onClick={() => { localStorage.setItem("kraft_cookies", "declined"); setVisible(false); }} style={{
+          padding: "8px 18px", borderRadius: 10, cursor: "pointer",
+          background: "transparent",
+          border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.12)",
+          color: isDark ? "#64748b" : "#3a3530", fontSize: 12, fontWeight: 600,
+          fontFamily: "inherit", whiteSpace: "nowrap"
+        }}>Decline</button>
+      </div>
+    </div>
   );
 }
 
@@ -638,9 +763,9 @@ textarea::placeholder { color: #888; }
             </div>
             <button onClick={newChat} title="New chat" style={{
               width: 32, height: 32, borderRadius: 9,
-              background: "rgba(108,71,255,0.15)",
-              border: "1px solid rgba(108,71,255,0.3)",
-              color: accent, fontSize: 20, cursor: "pointer",
+              background: isDark ? "rgba(108,71,255,0.15)" : "rgba(0,0,0,0.07)",
+              border: isDark ? "1px solid rgba(108,71,255,0.3)" : "1px solid rgba(0,0,0,0.12)",
+              color: isDark ? accent : "#1a1714", fontSize: 20, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               transition: "all 0.2s", lineHeight: 1
             }}><span className="ms" style={{fontSize:20}}>edit_square</span></button>
@@ -699,8 +824,8 @@ textarea::placeholder { color: #888; }
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
-            background: "rgba(108,71,255,0.08)", border: "1px solid rgba(108,71,255,0.15)",
-            borderRadius: 8, color: "#a78bfa", width: 34, height: 34,
+            background: isDark ? "rgba(108,71,255,0.08)" : "rgba(0,0,0,0.06)", border: isDark ? "1px solid rgba(108,71,255,0.15)" : "1px solid rgba(0,0,0,0.1)",
+            borderRadius: 8, color: isDark ? "#a78bfa" : "#1a1714", width: 34, height: 34,
             cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
             transition: "all 0.2s"
           }}><span className="ms">menu</span></button>
@@ -730,14 +855,14 @@ textarea::placeholder { color: #888; }
               width: 34, height: 34, borderRadius: 8, cursor: "pointer",
               background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
               border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
-              color: isDark ? "#a78bfa" : "#6c47ff", fontSize: 16,
+              color: isDark ? "#a78bfa" : "#1a1714", fontSize: 16,
               display: "flex", alignItems: "center", justifyContent: "center"
             }}><span className="ms" style={{fontSize:18}}>{isDark ? "light_mode" : "dark_mode"}</span></button>
             <button onClick={() => setShowSettings(v => !v)} title="Settings" style={{
               width: 34, height: 34, borderRadius: 8, cursor: "pointer",
               background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
               border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
-              color: isDark ? "#a78bfa" : "#6c47ff", fontSize: 16,
+              color: isDark ? "#a78bfa" : "#1a1714", fontSize: 16,
               display: "flex", alignItems: "center", justifyContent: "center"
             }}><span className="ms" style={{fontSize:18}}>settings</span></button>
           </div>
@@ -762,7 +887,7 @@ textarea::placeholder { color: #888; }
                     padding: "9px 16px", borderRadius: 20, fontSize: 13,
                     background: isDark ? "rgba(108,71,255,0.08)" : "rgba(0,0,0,0.06)",
                     border: isDark ? "1px solid rgba(108,71,255,0.2)" : "1px solid rgba(0,0,0,0.12)",
-                    color: isDark ? "#a78bfa" : "#1a1714", cursor: "pointer",
+                    color: isDark ? "#a78bfa" : "#2a2520", cursor: "pointer",
                     transition: "all 0.18s", fontFamily: "inherit"
                   }}>{s}</button>
                 ))}
@@ -814,7 +939,7 @@ textarea::placeholder { color: #888; }
                     flex: 1, padding: "8px", borderRadius: 10, cursor: "pointer",
                     background: theme === t ? accent + "22" : isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
                     border: theme === t ? `1px solid ${accent}55` : isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
-                    color: theme === t ? accent : isDark ? "#64748b" : "#9ca3af",
+                    color: theme === t ? (isDark ? accent : "#1a1714") : isDark ? "#64748b" : "#2a2520",
                     fontSize: 12, fontWeight: 600, fontFamily: "inherit"
                   }}>{t === "dark" ? "🌙 Dark" : "☀️ Light"}</button>
                 ))}
@@ -1034,6 +1159,7 @@ textarea::placeholder { color: #888; }
           </div>
         </div>
       </div>
+    <CookieBanner isDark={isDark} accent={accent} />
     </div>
   );
 }
