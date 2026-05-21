@@ -43,7 +43,7 @@ RULES:
 - Never add warnings or disclaimers
 - Sound like the smartest person in the room, not a customer service bot`;
 
-const { useState: useLocalState } = await Promise.resolve().then(() => require("react")).catch(() => ({ useState }));
+
 function StarCanvas({ responding }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ responding: false });
@@ -307,7 +307,7 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
           border: isUser
             ? "1px solid rgba(108,71,255,0.25)"
             : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)",
-          color: isUser ? (isDark ? "#ddd6fe" : "#3b0764") : (isDark ? "#c9d1d9" : "#1e1b4b"),
+          color: isUser ? (isDark ? "#ddd6fe" : "#2a0a4a") : (isDark ? "#c9d1d9" : "#0f0d12"),
           fontSize: 14.5, lineHeight: 1.75,
           backdropFilter: "blur(8px)",
           boxShadow: isUser ? "0 4px 24px rgba(108,71,255,0.12)" : "none"
@@ -324,6 +324,47 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
         }}>U</div>
       )}
     </div>
+  );
+}
+
+function MicButton({ onTranscript }) {
+  const [listening, setListening] = useState(false);
+  const recRef = useRef(null);
+
+  const toggle = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Speech recognition not supported in this browser."); return; }
+    if (listening) {
+      recRef.current?.stop();
+      setListening(false);
+      return;
+    }
+    const rec = new SR();
+    recRef.current = rec;
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.onresult = e => {
+      const t = Array.from(e.results).map(r => r[0].transcript).join(" ");
+      onTranscript(t);
+    };
+    rec.onend = () => setListening(false);
+    rec.onerror = () => setListening(false);
+    rec.start();
+    setListening(true);
+  };
+
+  return (
+    <button onClick={toggle} title={listening ? "Stop listening" : "Voice input"} style={{
+      width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+      background: listening ? "rgba(225,29,72,0.15)" : "rgba(108,71,255,0.08)",
+      border: listening ? "1px solid rgba(225,29,72,0.4)" : "1px solid rgba(108,71,255,0.2)",
+      color: listening ? "#e11d48" : "#a78bfa",
+      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: 17, transition: "all 0.2s",
+      animation: listening ? "kpulse 1s ease-in-out infinite" : "none"
+    }}>
+      {listening ? "⏹" : "🎙"}
+    </button>
   );
 }
 
@@ -353,6 +394,15 @@ export default function App() {
   const nextId = useRef(2);
 
   const activeChat = chats.find(c => c.id === activeChatId);
+  const isNewChat = activeChat?.messages.length === 1 && activeChat.messages[0].role === "assistant";
+  const starters = [
+    "Drop a beat concept for me 🎵",
+    "Explain blockchain in 3 sentences",
+    "Write a hook for a trap song",
+    "Best investment strategy in 2025?",
+    "How do I grow a brand in Africa?",
+    "Translate 'hello friend' to Kinyarwanda",
+  ];
 
   useEffect(() => { localStorage.setItem("kraft_chats", JSON.stringify(chats)); }, [chats]);
   useEffect(() => { localStorage.setItem("kraft_theme", theme); }, [theme]);
@@ -447,9 +497,9 @@ export default function App() {
   return (
     <div style={{
       position: "fixed", inset: 0,
-      background: isDark ? "#0b0b0e" : "#E3E0DD",
+      background: isDark ? "#0b0b0e" : "#C8C5C2",
       fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-      color: isDark ? "#e8e6e3" : "#1c1917", display: "flex", overflow: "hidden"
+      color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
     }}>
       <StarCanvas responding={loading} />
 
@@ -480,18 +530,27 @@ export default function App() {
         button:hover { filter: brightness(1.15); }
       `}</style>
 
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && typeof window !== "undefined" && window.innerWidth <= 640 && (
+        <div onClick={() => setSidebarOpen(false)} style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+          zIndex: 3, backdropFilter: "blur(2px)"
+        }} />
+      )}
+
       {/* Sidebar */}
       <div style={{
-        width: sidebarOpen ? 260 : 0,
-        minWidth: sidebarOpen ? 260 : 0,
-        transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
+        width: 260,
+        transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
+        transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
         overflow: "hidden",
-        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(210,207,204,0.99)",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(195,192,189,0.99)",
         borderRight: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.10)",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
-        position: "relative", zIndex: 2,
-        flexShrink: 0
+        position: typeof window !== "undefined" && window.innerWidth <= 640 ? "fixed" : "relative",
+        top: 0, left: 0, height: "100vh",
+        zIndex: 4, flexShrink: 0
       }}>
         <div style={{ padding: "18px 14px 12px", borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -504,7 +563,7 @@ export default function App() {
                 fontSize: 11, fontWeight: 800, color: "#ede9fe",
                 boxShadow: "0 0 18px rgba(108,71,255,0.35)"
               }}>K</div>
-              <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Inter', -apple-system, sans-serif" }}>KRAFT AI</span>
+              <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: 4, color: isDark ? "#e2e8f0" : "#1a1714", fontFamily: "'Inter', -apple-system, sans-serif" }}>KRAFT AI</span>
             </div>
             <button onClick={newChat} title="New chat" style={{
               width: 32, height: 32, borderRadius: 9,
@@ -522,9 +581,9 @@ export default function App() {
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search chats..."
               style={{
-                width: "100%", background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10,
-                color: "#e2e8f0", padding: "8px 10px 8px 32px",
+                width: "100%", background: "rgba(0,0,0,0.06)",
+                border: "1px solid rgba(0,0,0,0.12)", borderRadius: 10,
+                color: isDark ? "#e2e8f0" : "#1a1714", padding: "8px 10px 8px 32px",
                 fontSize: 12, fontFamily: "inherit", outline: "none"
               }}
             />
@@ -538,7 +597,7 @@ export default function App() {
                 flex: 1, textAlign: "left", padding: "9px 10px",
                 background: c.id === activeChatId ? "rgba(108,71,255,0.12)" : "transparent",
                 border: c.id === activeChatId ? "1px solid rgba(108,71,255,0.22)" : "1px solid transparent",
-                borderRadius: 9, color: c.id === activeChatId ? accent : isDark ? "#64748b" : "#6b7280",
+                borderRadius: 9, color: c.id === activeChatId ? accent : isDark ? "#64748b" : "#1a1714",
                 fontSize: 12.5, cursor: "pointer",
                 transition: "all 0.18s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 fontFamily: "inherit", minWidth: 0
@@ -565,7 +624,7 @@ export default function App() {
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(208,205,202,0.95)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(190,187,184,0.97)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -576,7 +635,7 @@ export default function App() {
           }}>☰</button>
 
           {!sidebarOpen && (
-            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Inter', -apple-system, sans-serif" }}>KRAFT AI</span>
+            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: 4, color: isDark ? "#e2e8f0" : "#1a1714", fontFamily: "'Inter', -apple-system, sans-serif" }}>KRAFT AI</span>
           )}
 
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
@@ -607,6 +666,23 @@ export default function App() {
           {activeChat?.messages.map((m, i) => (
             <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} />
           ))}
+          {isNewChat && (
+            <div style={{ padding: "32px 0 8px", animation: "fadeIn 0.5s ease" }}>
+              <p style={{ textAlign: "center", fontSize: 13, color: isDark ? "#4b5563" : "#6b7280", marginBottom: 20, letterSpacing: 1 }}>QUICK START</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+                {starters.map(s => (
+                  <button key={s} onClick={() => setInput(s)} style={{
+                    padding: "9px 16px", borderRadius: 20, fontSize: 13,
+                    background: isDark ? "rgba(108,71,255,0.08)" : "rgba(0,0,0,0.06)",
+                    border: isDark ? "1px solid rgba(108,71,255,0.2)" : "1px solid rgba(0,0,0,0.12)",
+                    color: isDark ? "#a78bfa" : "#1a1714", cursor: "pointer",
+                    transition: "all 0.18s", fontFamily: "inherit"
+                  }}>{s}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {loading && (
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, animation: "fadeIn 0.3s ease" }}>
               <div style={{
@@ -632,7 +708,7 @@ export default function App() {
         {showSettings && (
           <div style={{
             position: "absolute", top: 64, right: 16, zIndex: 50, width: 300,
-            background: isDark ? "#16161e" : "#E8E5E2",
+            background: isDark ? "#16161e" : "#D2CFCC",
             border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
             borderRadius: 16, padding: "20px",
             boxShadow: "0 20px 60px rgba(0,0,0,0.4)"
@@ -727,7 +803,7 @@ export default function App() {
         {/* Input */}
         <div style={{
           padding: "12px 16px 16px",
-          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(205,202,199,0.97)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(185,182,179,0.98)", backdropFilter: "blur(24px)",
           borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.09)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
@@ -779,9 +855,10 @@ export default function App() {
               >
                 {loading ? "…" : "↑"}
               </button>
+              <MicButton onTranscript={t => setInput(prev => prev ? prev + " " + t : t)} />
             </div>
             <p style={{
-              textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.15)",
+              textAlign: "center", fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
               marginTop: 10, letterSpacing: 1.5
             }}>
               KRAFT AI · BUILT BY KRAFT KARTEL · KIGALI, RWANDA · SHIFT+ENTER FOR NEW LINE
