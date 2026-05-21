@@ -447,7 +447,7 @@ export default function App() {
   return (
     <div style={{
       position: "fixed", inset: 0,
-      background: isDark ? "#0b0b0e" : "#EEECEA",
+      background: isDark ? "#0b0b0e" : "#E3E0DD",
       fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
       color: isDark ? "#e8e6e3" : "#1c1917", display: "flex", overflow: "hidden"
     }}>
@@ -486,7 +486,7 @@ export default function App() {
         minWidth: sidebarOpen ? 260 : 0,
         transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
         overflow: "hidden",
-        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(224,221,218,0.98)",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(210,207,204,0.99)",
         borderRight: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.10)",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
@@ -565,7 +565,7 @@ export default function App() {
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(220,217,214,0.92)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(208,205,202,0.95)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -632,7 +632,7 @@ export default function App() {
         {showSettings && (
           <div style={{
             position: "absolute", top: 64, right: 16, zIndex: 50, width: 300,
-            background: isDark ? "#16161e" : "#F5F2EF",
+            background: isDark ? "#16161e" : "#E8E5E2",
             border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
             borderRadius: 16, padding: "20px",
             boxShadow: "0 20px 60px rgba(0,0,0,0.4)"
@@ -727,7 +727,7 @@ export default function App() {
         {/* Input */}
         <div style={{
           padding: "12px 16px 16px",
-          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(218,215,212,0.95)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(205,202,199,0.97)", backdropFilter: "blur(24px)",
           borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.09)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
