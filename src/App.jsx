@@ -242,7 +242,7 @@ function ThinkingDots() {
         {[0, 1, 2].map(i => (
           <div key={i} style={{
             width: 7, height: 7, borderRadius: "50%",
-            background: "linear-gradient(135deg, #2563eb, #60a5fa)",
+            background: `linear-gradient(135deg, ${accent}, ${accent}99)`,
             animation: `kpulse 1.4s ease-in-out ${i * 0.18}s infinite`
           }} />
         ))}
@@ -254,7 +254,7 @@ function ThinkingDots() {
   );
 }
 
-function Message({ msg, isNew, isDark, accent, isStreaming }) {
+<Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} />
   const isUser = msg.role === "user";
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(!isStreaming);
@@ -285,11 +285,11 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
       {!isUser && (
         <div style={{
           width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-          background: "linear-gradient(135deg, #1a1a2e, #6c47ff)",
-          border: "1px solid rgba(108,71,255,0.5)",
+          background: `linear-gradient(135deg, #1a1a2e, ${accent})`,
+          border: `1px solid ${accent}80`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 12, fontWeight: 800, color: "#ede9fe", marginTop: 2,
-          boxShadow: "0 0 12px rgba(108,71,255,0.3)"
+          boxShadow: `0 0 12px ${accent}50`
         }}>K</div>
       )}
       <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: 4 }}>
@@ -302,17 +302,17 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
           padding: "13px 18px",
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
-            ? isDark ? "rgba(108,71,255,0.15)" : "rgba(108,71,255,0.08)"
+            ? isDark ? `${accent}25` : `${accent}12`
             : isDark ? "rgba(255,255,255,0.04)" : "rgba(255,254,252,0.92)",
           border: isUser
-            ? "1px solid rgba(108,71,255,0.25)"
+            ? `1px solid ${accent}40`
             : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)",
           color: isUser ? (isDark ? "#ddd6fe" : "#2a0a4a") : (isDark ? "#c9d1d9" : "#0f0d12"),
           fontSize: 14.5, lineHeight: 1.75,
           backdropFilter: "blur(8px)",
-          boxShadow: isUser ? "0 4px 24px rgba(108,71,255,0.12)" : "none"
+          boxShadow: isUser ? `0 4px 24px ${accent}20` : "none"
         }}>
-          {isUser ? msg.content : renderMarkdown(content)}{!done && <span style={{display:"inline-block",width:2,height:"1em",background:"#a78bfa",marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
+          {isUser ? msg.content : renderMarkdown(content)}{!done && <span style={{display:"inline-block",width:2,height:"1em",background:accent,marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
         </div>
       </div>
       {isUser && (
@@ -327,18 +327,32 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
   );
 }
 
-function MicButton({ onTranscript }) {
+function speakText(text, voiceSettings = {}) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  const voices = window.speechSynthesis.getVoices();
+  const gender = voiceSettings.gender || "female";
+  const preferred = voices.filter(v =>
+    gender === "female"
+      ? /female|zira|samantha|victoria|karen|moira|fiona|tessa/i.test(v.name)
+      : /male|david|mark|daniel|alex|jorge|diego/i.test(v.name)
+  );
+  if (preferred.length) utt.voice = preferred[0];
+  utt.rate = voiceSettings.rate || 1;
+  utt.pitch = voiceSettings.pitch || 1;
+  utt.volume = 1;
+  window.speechSynthesis.speak(utt);
+}
+
+function MicButton({ onTranscript, accent, voiceSettings }) {
   const [listening, setListening] = useState(false);
   const recRef = useRef(null);
 
   const toggle = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Speech recognition not supported in this browser."); return; }
-    if (listening) {
-      recRef.current?.stop();
-      setListening(false);
-      return;
-    }
+    if (listening) { recRef.current?.stop(); setListening(false); return; }
     const rec = new SR();
     recRef.current = rec;
     rec.lang = "en-US";
@@ -346,6 +360,7 @@ function MicButton({ onTranscript }) {
     rec.onresult = e => {
       const t = Array.from(e.results).map(r => r[0].transcript).join(" ");
       onTranscript(t);
+      speakText(t, voiceSettings);
     };
     rec.onend = () => setListening(false);
     rec.onerror = () => setListening(false);
@@ -354,16 +369,16 @@ function MicButton({ onTranscript }) {
   };
 
   return (
-    <button onClick={toggle} title={listening ? "Stop listening" : "Voice input"} style={{
+    <button onClick={toggle} title={listening ? "Stop" : "Voice input"} style={{
       width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-      background: listening ? "rgba(225,29,72,0.15)" : "rgba(108,71,255,0.08)",
-      border: listening ? "1px solid rgba(225,29,72,0.4)" : "1px solid rgba(108,71,255,0.2)",
-      color: listening ? "#e11d48" : "#a78bfa",
+      background: listening ? "rgba(225,29,72,0.15)" : `${accent}15`,
+      border: listening ? "1px solid rgba(225,29,72,0.4)" : `1px solid ${accent}40`,
+      color: listening ? "#e11d48" : accent,
       cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 17, transition: "all 0.2s",
+      transition: "all 0.2s",
       animation: listening ? "kpulse 1s ease-in-out infinite" : "none"
     }}>
-      {listening ? "⏹" : "🎙"}
+      <span className="ms" style={{fontSize:20}}>{listening ? "stop_circle" : "mic"}</span>
     </button>
   );
 }
@@ -389,6 +404,9 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 640);
   const [newMsgId, setNewMsgId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [voiceSettings, setVoiceSettings] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kraft_voice")) || { gender: "female", rate: 1, pitch: 1 }; } catch { return { gender: "female", rate: 1, pitch: 1 }; }
+  });
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const nextId = useRef(2);
@@ -510,6 +528,7 @@ export default function App() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
         @keyframes msgIn {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -534,6 +553,7 @@ export default function App() {
         input::placeholder { color: #888; }
 textarea::placeholder { color: #888; }
         button:hover { filter: brightness(1.15); }
+.ms { font-family: 'Material Symbols Rounded'; font-style: normal; font-weight: normal; font-size: 20px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-smoothing: antialiased; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
       `}</style>
 
       {/* Mobile overlay backdrop */}
@@ -563,11 +583,11 @@ textarea::placeholder { color: #888; }
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <div style={{
                 width: 30, height: 30, borderRadius: "50%",
-                background: "linear-gradient(135deg, #1a1a2e, #6c47ff)",
-                border: "1px solid rgba(108,71,255,0.5)",
+                background: `linear-gradient(135deg, #1a1a2e, ${accent})`,
+                border: `1px solid ${accent}80`,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 11, fontWeight: 800, color: "#ede9fe",
-                boxShadow: "0 0 18px rgba(108,71,255,0.35)"
+                boxShadow: `0 0 18px ${accent}55`
               }}>K</div>
               <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: 4, color: isDark ? "#e2e8f0" : "#1a1714", fontFamily: "'Inter', -apple-system, sans-serif" }}>KRAFT AI</span>
             </div>
@@ -575,13 +595,13 @@ textarea::placeholder { color: #888; }
               width: 32, height: 32, borderRadius: 9,
               background: "rgba(108,71,255,0.15)",
               border: "1px solid rgba(108,71,255,0.3)",
-              color: "#a78bfa", fontSize: 20, cursor: "pointer",
+              color: accent, fontSize: 20, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               transition: "all 0.2s", lineHeight: 1
-            }}>+</button>
+            }}><span className="ms" style={{fontSize:20}}>edit_square</span></button>
           </div>
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#4b5563", pointerEvents: "none" }}>🔍</span>
+            <span className="ms" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 18, color: isDark ? "#4b5563" : "#6b6560", pointerEvents: "none" }}>search</span>
             <input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -614,7 +634,7 @@ textarea::placeholder { color: #888; }
                 color: isDark ? "#4b5563" : "#2a2520", fontSize: 13, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 transition: "all 0.15s"
-              }}>✕</button>
+              }}><span className="ms" style={{fontSize:16}}>close</span></button>
             </div>
           ))}
         </div>
@@ -638,7 +658,7 @@ textarea::placeholder { color: #888; }
             borderRadius: 8, color: "#a78bfa", width: 34, height: 34,
             cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
             transition: "all 0.2s"
-          }}>☰</button>
+          }}><span className="ms">menu</span></button>
 
           {!sidebarOpen && (
             <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: 4, color: isDark ? "#e2e8f0" : "#1a1714", fontFamily: "'Inter', -apple-system, sans-serif" }}>KRAFT AI</span>
@@ -651,14 +671,14 @@ textarea::placeholder { color: #888; }
               border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
               color: isDark ? "#a78bfa" : "#6c47ff", fontSize: 16,
               display: "flex", alignItems: "center", justifyContent: "center"
-            }}>{isDark ? "☀️" : "🌙"}</button>
+            }}><span className="ms" style={{fontSize:18}}>{isDark ? "light_mode" : "dark_mode"}</span></button>
             <button onClick={() => setShowSettings(v => !v)} title="Settings" style={{
               width: 34, height: 34, borderRadius: 8, cursor: "pointer",
               background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
               border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
               color: isDark ? "#a78bfa" : "#6c47ff", fontSize: 16,
               display: "flex", alignItems: "center", justifyContent: "center"
-            }}>⚙️</button>
+            }}><span className="ms" style={{fontSize:18}}>settings</span></button>
           </div>
         </div>
 
@@ -721,7 +741,7 @@ textarea::placeholder { color: #888; }
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
               <span style={{ fontWeight: 700, fontSize: 14, color: isDark ? "#e2e8f0" : "#1a1a2e", fontFamily: "'Inter', -apple-system, sans-serif", letterSpacing: 2 }}>SETTINGS</span>
-              <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", color: isDark ? "#64748b" : "#9ca3af", fontSize: 18, cursor: "pointer" }}>✕</button>
+              <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", color: isDark ? "#64748b" : "#6b6560", fontSize: 18, cursor: "pointer", display:"flex", alignItems:"center" }}><span className="ms" style={{fontSize:20}}>close</span></button>
             </div>
 
             {/* Theme */}
@@ -774,6 +794,42 @@ textarea::placeholder { color: #888; }
                     color: isDark ? "#94a3b8" : "#6b7280", fontSize: 12, fontWeight: 600, fontFamily: "inherit"
                   }}>{label}</button>
                 ))}
+              </div>
+            </div>
+
+            {/* Voice */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>VOICE</div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                {["female", "male"].map(g => (
+                  <button key={g} onClick={() => {
+                    const v = { ...voiceSettings, gender: g };
+                    setVoiceSettings(v);
+                    localStorage.setItem("kraft_voice", JSON.stringify(v));
+                  }} style={{
+                    flex: 1, padding: "8px", borderRadius: 10, cursor: "pointer",
+                    background: voiceSettings.gender === g ? `${accent}22` : isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
+                    border: voiceSettings.gender === g ? `1px solid ${accent}55` : isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.09)",
+                    color: voiceSettings.gender === g ? accent : isDark ? "#64748b" : "#3a3530",
+                    fontSize: 12, fontWeight: 600, fontFamily: "inherit"
+                  }}>{g === "female" ? "♀ Female" : "♂ Male"}</button>
+                ))}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ fontSize: 11, color: isDark ? "#4b5563" : "#6b6560", marginBottom: 4 }}>Speed: {voiceSettings.rate}x</div>
+                <input type="range" min="0.5" max="2" step="0.1" value={voiceSettings.rate} onChange={e => {
+                  const v = { ...voiceSettings, rate: parseFloat(e.target.value) };
+                  setVoiceSettings(v);
+                  localStorage.setItem("kraft_voice", JSON.stringify(v));
+                }} style={{ width: "100%", accentColor: accent }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: isDark ? "#4b5563" : "#6b6560", marginBottom: 4 }}>Pitch: {voiceSettings.pitch}</div>
+                <input type="range" min="0.5" max="2" step="0.1" value={voiceSettings.pitch} onChange={e => {
+                  const v = { ...voiceSettings, pitch: parseFloat(e.target.value) };
+                  setVoiceSettings(v);
+                  localStorage.setItem("kraft_voice", JSON.stringify(v));
+                }} style={{ width: "100%", accentColor: accent }} />
               </div>
             </div>
 
@@ -871,18 +927,18 @@ textarea::placeholder { color: #888; }
                   width: 40, height: 40, borderRadius: 12, flexShrink: 0,
                   background: loading || !input.trim()
                     ? "rgba(108,71,255,0.08)"
-                    : "linear-gradient(135deg, #6c47ff, #a78bfa)",
+                    : `linear-gradient(135deg, ${accent}, ${accent}cc)`,
                   border: "1px solid rgba(108,71,255,0.25)",
                   color: loading || !input.trim() ? "#4b3a8a" : "#fff",
                   cursor: loading || !input.trim() ? "not-allowed" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 18, transition: "all 0.2s",
-                  boxShadow: loading || !input.trim() ? "none" : "0 0 20px rgba(108,71,255,0.45)"
+                  boxShadow: loading || !input.trim() ? "none" : `0 0 20px ${accent}70`
                 }}
               >
-                {loading ? "…" : "↑"}
+                {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
               </button>
-              <MicButton onTranscript={t => setInput(prev => prev ? prev + " " + t : t)} />
+              <MicButton onTranscript={t => setInput(prev => prev ? prev + " " + t : t)} accent={accent} voiceSettings={voiceSettings} />
             </div>
             <p style={{
               textAlign: "center", fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
