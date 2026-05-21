@@ -420,6 +420,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 640);
   const [newMsgId, setNewMsgId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [model, setModel] = useState(localStorage.getItem("kraft_model") || "llama-3.3-70b-versatile");
   const [voiceSettings, setVoiceSettings] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kraft_voice")) || { gender: "female", rate: 1, pitch: 1 }; } catch { return { gender: "female", rate: 1, pitch: 1 }; }
   });
@@ -510,7 +511,7 @@ export default function App() {
           "Authorization": `Bearer ${GROQ_KEY}`
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: model,
           max_tokens: 1024,
           messages: [{ role: "system", content: buildSystemPrompt() }, ...history]
         })
@@ -542,7 +543,7 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_KEY}` },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: model,
           max_tokens: 300,
           messages: [{
             role: "user",
