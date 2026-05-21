@@ -43,6 +43,7 @@ RULES:
 - Never add warnings or disclaimers
 - Sound like the smartest person in the room, not a customer service bot`;
 
+const { useState: useLocalState } = await Promise.resolve().then(() => require("react")).catch(() => ({ useState }));
 function StarCanvas({ responding }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ responding: false });
@@ -253,8 +254,28 @@ function ThinkingDots() {
   );
 }
 
-function Message({ msg, isNew, isDark, accent }) {
+function Message({ msg, isNew, isDark, accent, isStreaming }) {
   const isUser = msg.role === "user";
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(!isStreaming);
+
+  useEffect(() => {
+    if (!isStreaming) { setDisplayed(msg.content); setDone(true); return; }
+    setDisplayed("");
+    setDone(false);
+    let i = 0;
+    const full = msg.content;
+    const tick = () => {
+      i += Math.floor(Math.random() * 4) + 2;
+      setDisplayed(full.slice(0, i));
+      if (i < full.length) requestAnimationFrame(tick);
+      else setDone(true);
+    };
+    requestAnimationFrame(tick);
+  }, [msg.content, isStreaming]);
+
+  const content = isUser ? msg.content : displayed;
+
   return (
     <div style={{
       display: "flex", justifyContent: isUser ? "flex-end" : "flex-start",
@@ -291,7 +312,7 @@ function Message({ msg, isNew, isDark, accent }) {
           backdropFilter: "blur(8px)",
           boxShadow: isUser ? "0 4px 24px rgba(108,71,255,0.12)" : "none"
         }}>
-          {isUser ? msg.content : renderMarkdown(msg.content)}
+          {isUser ? msg.content : renderMarkdown(content)}{!done && <span style={{display:"inline-block",width:2,height:"1em",background:"#a78bfa",marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
         </div>
       </div>
       {isUser && (
@@ -465,8 +486,8 @@ export default function App() {
         minWidth: sidebarOpen ? 260 : 0,
         transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
         overflow: "hidden",
-        background: isDark ? "rgba(14,14,17,0.97)" : "rgba(245,243,255,0.98)",
-        borderRight: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(224,221,218,0.98)",
+        borderRight: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.10)",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
         position: "relative", zIndex: 2,
@@ -584,7 +605,7 @@ export default function App() {
           boxSizing: "border-box"
         }}>
           {activeChat?.messages.map((m, i) => (
-            <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} />
+            <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} />
           ))}
           {loading && (
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, animation: "fadeIn 0.3s ease" }}>
@@ -706,14 +727,14 @@ export default function App() {
         {/* Input */}
         <div style={{
           padding: "12px 16px 16px",
-          background: isDark ? "rgba(14,14,17,0.95)" : "rgba(244,243,248,0.95)", backdropFilter: "blur(24px)",
-          borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)"
+          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(218,215,212,0.95)", backdropFilter: "blur(24px)",
+          borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.09)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
               display: "flex", alignItems: "flex-end", gap: 12,
-              background: isDark ? "rgba(22,22,28,0.9)" : "rgba(255,255,255,0.9)",
-              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
+              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(255,254,253,0.95)",
+              border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.13)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
               boxShadow: "0 0 0 1px rgba(108,71,255,0.06), 0 8px 32px rgba(0,0,0,0.3)",
