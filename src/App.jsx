@@ -315,7 +315,7 @@ export default function App() {
   const [activeChatId, setActiveChatId] = useState(1);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 640);
   const [newMsgId, setNewMsgId] = useState(null);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
@@ -394,15 +394,15 @@ export default function App() {
 
   return (
     <div style={{
-      position: "relative", minHeight: "100vh",
-      background: "#080c14",
-      fontFamily: "'Inter', 'SF Pro Display', system-ui, sans-serif",
+      position: "fixed", inset: 0,
+      background: "#0e0e11",
+      fontFamily: "'DM Sans', system-ui, sans-serif",
       color: "#e2e8f0", display: "flex", overflow: "hidden"
     }}>
       <StarCanvas responding={loading} />
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
         @keyframes msgIn {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -433,8 +433,8 @@ export default function App() {
         minWidth: sidebarOpen ? 260 : 0,
         transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
         overflow: "hidden",
-        background: "rgba(8,10,18,0.95)",
-          borderRight: "1px solid rgba(255,255,255,0.04)",
+        background: "rgba(14,14,17,0.97)",
+        borderRight: "1px solid rgba(255,255,255,0.06)",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
         position: "relative", zIndex: 2,
@@ -444,13 +444,13 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <div style={{
               width: 30, height: 30, borderRadius: "50%",
-              background: "linear-gradient(135deg, #1e3a8a, #2563eb)",
-              border: "1px solid rgba(37,99,235,0.5)",
+              background: "linear-gradient(135deg, #1a1a2e, #6c47ff)",
+              border: "1px solid rgba(108,71,255,0.5)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, fontWeight: 800, color: "#bfdbfe",
-              boxShadow: "0 0 14px rgba(37,99,235,0.4)"
+              fontSize: 11, fontWeight: 800, color: "#ede9fe",
+              boxShadow: "0 0 18px rgba(108,71,255,0.35)"
             }}>K</div>
-            <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: 3, color: "#60a5fa" }}>KRAFT AI</span>
+            <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Syne', sans-serif" }}>KRAFT AI</span>
           </div>
           <button onClick={newChat} style={{
             width: "100%", padding: "10px 14px",
@@ -485,13 +485,13 @@ export default function App() {
       </div>
 
       {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", position: "relative", zIndex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", position: "relative", zIndex: 1, minWidth: 0, height: "100vh", overflow: "hidden" }}>
 
         {/* Topbar */}
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: "1px solid rgba(37,99,235,0.1)",
-          background: "rgba(5,8,22,0.85)", backdropFilter: "blur(20px)",
+          background: "rgba(14,14,17,0.92)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -502,7 +502,7 @@ export default function App() {
           }}>☰</button>
 
           {!sidebarOpen && (
-            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: 4, color: "#3b82f6" }}>KRAFT AI</span>
+            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Syne', sans-serif" }}>KRAFT AI</span>
           )}
 
           <div style={{ marginLeft: "auto" }} />
@@ -510,10 +510,10 @@ export default function App() {
 
         {/* Messages */}
         <div style={{
-          flex: 1, overflowY: "auto", padding: "32px 24px",
+          flex: 1, overflowY: "auto", padding: "24px 16px 12px",
           display: "flex", flexDirection: "column", gap: 24,
           maxWidth: 860, width: "100%", margin: "0 auto", alignSelf: "center",
-          boxSizing: "border-box", height: 0, minHeight: "100%"
+          boxSizing: "border-box"
         }}>
           {activeChat?.messages.map((m, i) => (
             <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} />
@@ -541,15 +541,15 @@ export default function App() {
 
         {/* Input */}
         <div style={{
-          padding: "16px 24px 20px",
-          background: "rgba(5,8,22,0.9)", backdropFilter: "blur(20px)",
+          padding: "12px 16px 16px",
+          background: "rgba(14,14,17,0.95)", backdropFilter: "blur(24px)",
           borderTop: "1px solid rgba(37,99,235,0.1)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
               display: "flex", alignItems: "flex-end", gap: 12,
-              background: "rgba(11,18,32,0.8)",
-              border: "1px solid rgba(37,99,235,0.08)",
+              background: "rgba(22,22,28,0.9)",
+              border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
               boxShadow: "0 0 0 1px rgba(37,99,235,0.05), 0 8px 32px rgba(0,0,0,0.3)",
