@@ -253,7 +253,7 @@ function ThinkingDots() {
   );
 }
 
-function Message({ msg, isNew }) {
+function Message({ msg, isNew, isDark, accent }) {
   const isUser = msg.role === "user";
   return (
     <div style={{
@@ -281,12 +281,12 @@ function Message({ msg, isNew }) {
           padding: "13px 18px",
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
-            ? "linear-gradient(135deg, rgba(108,71,255,0.18), rgba(167,139,250,0.08))"
-            : "rgba(255,255,255,0.025)",
+            ? isDark ? "rgba(108,71,255,0.15)" : "rgba(108,71,255,0.08)"
+            : isDark ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.8)",
           border: isUser
-            ? "1px solid rgba(108,71,255,0.3)"
-            : "1px solid rgba(255,255,255,0.05)",
-          color: isUser ? "#ddd6fe" : "#c9d1d9",
+            ? "1px solid rgba(108,71,255,0.25)"
+            : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)",
+          color: isUser ? (isDark ? "#ddd6fe" : "#3b0764") : (isDark ? "#c9d1d9" : "#1e1b4b"),
           fontSize: 14.5, lineHeight: 1.75,
           backdropFilter: "blur(8px)",
           boxShadow: isUser ? "0 4px 24px rgba(108,71,255,0.12)" : "none"
@@ -307,6 +307,13 @@ function Message({ msg, isNew }) {
 }
 
 export default function App() {
+  const savedTheme = localStorage.getItem("kraft_theme") || "dark";
+  const savedAccent = localStorage.getItem("kraft_accent") || "#6c47ff";
+  const [theme, setTheme] = useState(savedTheme);
+  const [accent, setAccent] = useState(savedAccent);
+  const [showSettings, setShowSettings] = useState(false);
+  const isDark = theme === "dark";
+
   const savedChats = (() => { try { return JSON.parse(localStorage.getItem("kraft_chats")) || null; } catch { return null; } })();
   const savedActiveId = (() => { try { return JSON.parse(localStorage.getItem("kraft_active_id")) || 1; } catch { return 1; } })();
   const [chats, setChats] = useState(savedChats || [
@@ -326,9 +333,9 @@ export default function App() {
 
   const activeChat = chats.find(c => c.id === activeChatId);
 
-  useEffect(() => {
-    localStorage.setItem("kraft_chats", JSON.stringify(chats));
-  }, [chats]);
+  useEffect(() => { localStorage.setItem("kraft_chats", JSON.stringify(chats)); }, [chats]);
+  useEffect(() => { localStorage.setItem("kraft_theme", theme); }, [theme]);
+  useEffect(() => { localStorage.setItem("kraft_accent", accent); }, [accent]);
 
   useEffect(() => {
     localStorage.setItem("kraft_active_id", JSON.stringify(activeChatId));
@@ -419,9 +426,9 @@ export default function App() {
   return (
     <div style={{
       position: "fixed", inset: 0,
-      background: "#0e0e11",
+      background: isDark ? "#0e0e11" : "#f4f3f8",
       fontFamily: "'DM Sans', system-ui, sans-serif",
-      color: "#e2e8f0", display: "flex", overflow: "hidden"
+      color: isDark ? "#e2e8f0" : "#1a1a2e", display: "flex", overflow: "hidden"
     }}>
       <StarCanvas responding={loading} />
 
@@ -458,14 +465,14 @@ export default function App() {
         minWidth: sidebarOpen ? 260 : 0,
         transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
         overflow: "hidden",
-        background: "rgba(14,14,17,0.97)",
-        borderRight: "1px solid rgba(255,255,255,0.06)",
+        background: isDark ? "rgba(14,14,17,0.97)" : "rgba(245,243,255,0.98)",
+        borderRight: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
         position: "relative", zIndex: 2,
         flexShrink: 0
       }}>
-        <div style={{ padding: "18px 14px 12px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ padding: "18px 14px 12px", borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <div style={{
@@ -510,7 +517,7 @@ export default function App() {
                 flex: 1, textAlign: "left", padding: "9px 10px",
                 background: c.id === activeChatId ? "rgba(108,71,255,0.12)" : "transparent",
                 border: c.id === activeChatId ? "1px solid rgba(108,71,255,0.22)" : "1px solid transparent",
-                borderRadius: 9, color: c.id === activeChatId ? "#c4b5fd" : "#64748b",
+                borderRadius: 9, color: c.id === activeChatId ? accent : isDark ? "#64748b" : "#6b7280",
                 fontSize: 12.5, cursor: "pointer",
                 transition: "all 0.18s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 fontFamily: "inherit", minWidth: 0
@@ -525,7 +532,7 @@ export default function App() {
             </div>
           ))}
         </div>
-        <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(255,255,255,0.04)", fontSize: 10, color: "#374151", letterSpacing: 1.5, fontWeight: 600 }}>
+        <div style={{ padding: "12px 14px", borderTop: isDark ? "1px solid rgba(255,255,255,0.04)" : "1px solid rgba(0,0,0,0.06)", fontSize: 10, color: isDark ? "#374151" : "#9ca3af", letterSpacing: 1.5, fontWeight: 600 }}>
           KRAFT AI · KIGALI, RWANDA
         </div>
       </div>
@@ -536,8 +543,8 @@ export default function App() {
         {/* Topbar */}
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
-          borderBottom: "1px solid rgba(255,255,255,0.05)",
-          background: "rgba(14,14,17,0.92)", backdropFilter: "blur(24px)",
+          borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
+          background: isDark ? "rgba(14,14,17,0.92)" : "rgba(244,243,248,0.92)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -551,7 +558,22 @@ export default function App() {
             <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Syne', sans-serif" }}>KRAFT AI</span>
           )}
 
-          <div style={{ marginLeft: "auto" }} />
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={() => setTheme(t => t === "dark" ? "light" : "dark")} title="Toggle theme" style={{
+              width: 34, height: 34, borderRadius: 8, cursor: "pointer",
+              background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
+              color: isDark ? "#a78bfa" : "#6c47ff", fontSize: 16,
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>{isDark ? "☀️" : "🌙"}</button>
+            <button onClick={() => setShowSettings(v => !v)} title="Settings" style={{
+              width: 34, height: 34, borderRadius: 8, cursor: "pointer",
+              background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
+              color: isDark ? "#a78bfa" : "#6c47ff", fontSize: 16,
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>⚙️</button>
+          </div>
         </div>
 
         {/* Messages */}
@@ -562,7 +584,7 @@ export default function App() {
           boxSizing: "border-box"
         }}>
           {activeChat?.messages.map((m, i) => (
-            <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} />
+            <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} />
           ))}
           {loading && (
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, animation: "fadeIn 0.3s ease" }}>
@@ -585,17 +607,113 @@ export default function App() {
           <div ref={bottomRef} />
         </div>
 
+        {/* Settings Panel */}
+        {showSettings && (
+          <div style={{
+            position: "absolute", top: 64, right: 16, zIndex: 50, width: 300,
+            background: isDark ? "#1a1a24" : "#ffffff",
+            border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
+            borderRadius: 16, padding: "20px",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.4)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <span style={{ fontWeight: 700, fontSize: 14, color: isDark ? "#e2e8f0" : "#1a1a2e", fontFamily: "'Syne', sans-serif", letterSpacing: 2 }}>SETTINGS</span>
+              <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", color: isDark ? "#64748b" : "#9ca3af", fontSize: 18, cursor: "pointer" }}>✕</button>
+            </div>
+
+            {/* Theme */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 10, opacity: 0.8 }}>APPEARANCE</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {["dark", "light"].map(t => (
+                  <button key={t} onClick={() => setTheme(t)} style={{
+                    flex: 1, padding: "8px", borderRadius: 10, cursor: "pointer",
+                    background: theme === t ? accent + "22" : isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+                    border: theme === t ? `1px solid ${accent}55` : isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
+                    color: theme === t ? accent : isDark ? "#64748b" : "#9ca3af",
+                    fontSize: 12, fontWeight: 600, fontFamily: "inherit"
+                  }}>{t === "dark" ? "🌙 Dark" : "☀️ Light"}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Accent color */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 10, opacity: 0.8 }}>ACCENT COLOR</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {["#6c47ff","#e11d48","#0ea5e9","#10b981","#f59e0b","#ec4899","#64748b","#ffffff"].map(c => (
+                  <button key={c} onClick={() => setAccent(c)} style={{
+                    width: 32, height: 32, borderRadius: "50%", background: c,
+                    border: accent === c ? "3px solid white" : "3px solid transparent",
+                    cursor: "pointer", outline: accent === c ? `2px solid ${c}` : "none",
+                    outlineOffset: 2
+                  }} />
+                ))}
+              </div>
+              <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 11, color: isDark ? "#64748b" : "#9ca3af" }}>Custom:</span>
+                <input type="color" value={accent} onChange={e => setAccent(e.target.value)} style={{
+                  width: 36, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: "none"
+                }} />
+                <span style={{ fontSize: 11, color: isDark ? "#64748b" : "#9ca3af", fontFamily: "monospace" }}>{accent}</span>
+              </div>
+            </div>
+
+            {/* Font size */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 10, opacity: 0.8 }}>CHAT FONT SIZE</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[["S","13px"],["M","14.5px"],["L","16px"]].map(([label, size]) => (
+                  <button key={label} onClick={() => localStorage.setItem("kraft_fontsize", size)} style={{
+                    flex: 1, padding: "7px", borderRadius: 9, cursor: "pointer",
+                    background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+                    border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
+                    color: isDark ? "#94a3b8" : "#6b7280", fontSize: 12, fontWeight: 600, fontFamily: "inherit"
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Clear memory */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 10, opacity: 0.8 }}>MEMORY</div>
+              <button onClick={() => {
+                if (window.confirm("Clear all conversations?")) {
+                  localStorage.removeItem("kraft_chats");
+                  localStorage.removeItem("kraft_active_id");
+                  window.location.reload();
+                }
+              }} style={{
+                width: "100%", padding: "9px", borderRadius: 10, cursor: "pointer",
+                background: "rgba(225,29,72,0.08)", border: "1px solid rgba(225,29,72,0.2)",
+                color: "#e11d48", fontSize: 12, fontWeight: 600, fontFamily: "inherit"
+              }}>🗑 Clear All Conversations</button>
+            </div>
+
+            {/* Model info */}
+            <div style={{ paddingTop: 14, borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)" }}>
+              <div style={{ fontSize: 11, color: isDark ? "#6c47ff" : "#7c3aed", letterSpacing: 2, fontWeight: 700, marginBottom: 8, opacity: 0.8 }}>MODEL</div>
+              <div style={{ fontSize: 12, color: isDark ? "#64748b" : "#9ca3af", lineHeight: 1.7 }}>
+                <div>Engine · LLaMA 3.3 70B</div>
+                <div>Context · 128k tokens</div>
+                <div>Built by · Kraft Kartel</div>
+                <div>Location · Kigali, Rwanda</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Input */}
         <div style={{
           padding: "12px 16px 16px",
-          background: "rgba(14,14,17,0.95)", backdropFilter: "blur(24px)",
-          borderTop: "1px solid rgba(255,255,255,0.05)"
+          background: isDark ? "rgba(14,14,17,0.95)" : "rgba(244,243,248,0.95)", backdropFilter: "blur(24px)",
+          borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
               display: "flex", alignItems: "flex-end", gap: 12,
-              background: "rgba(22,22,28,0.9)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: isDark ? "rgba(22,22,28,0.9)" : "rgba(255,255,255,0.9)",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
               boxShadow: "0 0 0 1px rgba(108,71,255,0.06), 0 8px 32px rgba(0,0,0,0.3)",
@@ -617,7 +735,7 @@ export default function App() {
                 rows={1}
                 style={{
                   flex: 1, background: "transparent", border: "none",
-                  color: "#e2e8f0", fontSize: 14.5, lineHeight: 1.7,
+                  color: isDark ? "#e2e8f0" : "#1a1a2e", fontSize: 14.5, lineHeight: 1.7,
                   fontFamily: "inherit", padding: "4px 0",
                   maxHeight: 160, overflowY: "auto"
                 }}
