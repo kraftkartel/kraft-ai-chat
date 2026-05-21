@@ -282,7 +282,7 @@ function Message({ msg, isNew, isDark, accent }) {
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
             ? isDark ? "rgba(108,71,255,0.15)" : "rgba(108,71,255,0.08)"
-            : isDark ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.8)",
+            : isDark ? "rgba(255,255,255,0.04)" : "rgba(255,254,252,0.92)",
           border: isUser
             ? "1px solid rgba(108,71,255,0.25)"
             : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)",
@@ -426,14 +426,14 @@ export default function App() {
   return (
     <div style={{
       position: "fixed", inset: 0,
-      background: isDark ? "#0e0e11" : "#f4f3f8",
-      fontFamily: "'DM Sans', system-ui, sans-serif",
-      color: isDark ? "#e2e8f0" : "#1a1a2e", display: "flex", overflow: "hidden"
+      background: isDark ? "#0b0b0e" : "#EEECEA",
+      fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+      color: isDark ? "#e8e6e3" : "#1c1917", display: "flex", overflow: "hidden"
     }}>
       <StarCanvas responding={loading} />
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @keyframes msgIn {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -449,7 +449,7 @@ export default function App() {
           from { opacity: 0; transform: translateX(-20px); }
           to { opacity: 1; transform: translateX(0); }
         }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
         textarea:focus { outline: none; }
         textarea { resize: none; }
         ::-webkit-scrollbar { width: 4px; }
@@ -483,7 +483,7 @@ export default function App() {
                 fontSize: 11, fontWeight: 800, color: "#ede9fe",
                 boxShadow: "0 0 18px rgba(108,71,255,0.35)"
               }}>K</div>
-              <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Syne', sans-serif" }}>KRAFT AI</span>
+              <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Inter', -apple-system, sans-serif" }}>KRAFT AI</span>
             </div>
             <button onClick={newChat} title="New chat" style={{
               width: 32, height: 32, borderRadius: 9,
@@ -544,7 +544,7 @@ export default function App() {
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          background: isDark ? "rgba(14,14,17,0.92)" : "rgba(244,243,248,0.92)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(220,217,214,0.92)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -555,7 +555,7 @@ export default function App() {
           }}>☰</button>
 
           {!sidebarOpen && (
-            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Syne', sans-serif" }}>KRAFT AI</span>
+            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: 4, color: "#e2e8f0", fontFamily: "'Inter', -apple-system, sans-serif" }}>KRAFT AI</span>
           )}
 
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
@@ -611,13 +611,13 @@ export default function App() {
         {showSettings && (
           <div style={{
             position: "absolute", top: 64, right: 16, zIndex: 50, width: 300,
-            background: isDark ? "#1a1a24" : "#ffffff",
+            background: isDark ? "#16161e" : "#F5F2EF",
             border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
             borderRadius: 16, padding: "20px",
             boxShadow: "0 20px 60px rgba(0,0,0,0.4)"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-              <span style={{ fontWeight: 700, fontSize: 14, color: isDark ? "#e2e8f0" : "#1a1a2e", fontFamily: "'Syne', sans-serif", letterSpacing: 2 }}>SETTINGS</span>
+              <span style={{ fontWeight: 700, fontSize: 14, color: isDark ? "#e2e8f0" : "#1a1a2e", fontFamily: "'Inter', -apple-system, sans-serif", letterSpacing: 2 }}>SETTINGS</span>
               <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", color: isDark ? "#64748b" : "#9ca3af", fontSize: 18, cursor: "pointer" }}>✕</button>
             </div>
 
