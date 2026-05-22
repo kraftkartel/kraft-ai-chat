@@ -490,7 +490,7 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
           onAutoSend(text);
           finalTranscript = "";
         }
-      }, 1500);
+      }, 1000);
     };
 
     rec.onend = () => {
@@ -595,6 +595,8 @@ export default function App() {
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const nextId = useRef(2);
+  const activeChatRef = useRef(null);
+  useEffect(() => { activeChatRef.current = chats.find(c => c.id === activeChatId); }, [chats, activeChatId]);
 
   useEffect(() => {
     const savedFont = localStorage.getItem("kraft_font");
@@ -662,8 +664,10 @@ export default function App() {
     if (!text || loading) return;
     setInput("");
 
+    const currentChat = activeChatRef.current || chats.find(c => c.id === activeChatId);
+    if (!currentChat) return;
     const userMsg = { role: "user", content: text };
-    const updatedMessages = [...activeChat.messages, userMsg];
+    const updatedMessages = [...currentChat.messages, userMsg];
 
     setChats(prev => prev.map(c => c.id === activeChatId
       ? { ...c, title: c.title === "New conversation" ? text.slice(0, 36) + (text.length > 36 ? "…" : "") : c.title, messages: updatedMessages }
@@ -672,7 +676,7 @@ export default function App() {
     setLoading(true);
 
     const history = updatedMessages
-      .filter((m, i) => !(m.role === "assistant" && i === 0))
+      .filter((m, idx) => !(m.role === "assistant" && idx === 0))
       .map(m => ({ role: m.role, content: m.content }))
       .slice(-6);
 
@@ -1245,7 +1249,7 @@ textarea::placeholder { color: #888; }
               }}>
                 <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
               </button>
-              <MicButton onTranscript={t => { setInput(t); }} onAutoSend={t => { setInput(t); setTimeout(() => { sendMessage(t); setInput(""); }, 80); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
+              <MicButton onTranscript={t => { setInput(t); }} onAutoSend={t => { setInput(""); sendMessage(t); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
             </div>
             <p style={{
               textAlign: "center", fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
