@@ -729,21 +729,19 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
   };
 
   return (
-    <button 
-      onClick={toggle} 
+    <button
+      onClick={toggle}
       title={listening ? "Stop Listening" : "Voice Input"}
       style={{
-        width: 40, 
-        height: 40, 
-        borderRadius: 12, 
-        background: listening ? "rgba(225,29,72,0.2)" : `${accent}15`,
-        border: listening ? "1px solid #e11d48" : `1px solid ${accent}40`,
-        color: listening ? "#e11d48" : accent,
-        cursor: "pointer",
-        animation: listening ? "kpulse 1.2s infinite" : "none"
+        width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+        background: "transparent", border: "none",
+        color: listening ? "#e11d48" : isDark ? "#4b5563" : "#9ca3af",
+        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+        transition: "all 0.15s",
+        animation: listening ? "kpulse 1s ease-in-out infinite" : "none"
       }}
     >
-      <span className="ms" style={{ fontSize: 20 }}>
+      <span className="ms" style={{ fontSize: 18 }}>
         {listening ? "stop_circle" : "mic"}
       </span>
     </button>
@@ -1020,9 +1018,11 @@ export default function App() {
   return (
   <div style={{
     position: "fixed", inset: 0,
-    background: isDark ? "#0a0a0f" : "#f5f3eb",
+    background: isDark ? "#0a0a0f" : "#f0ede6",        // ← Softer light background
     fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-    color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
+    color: isDark ? "#e8e6e3" : "#1c1914", 
+    display: "flex", 
+    overflow: "hidden"
   }}>
       <div data-theme={isDark ? "dark" : "light"} style={{display: "none"}}></div>
 
@@ -1084,7 +1084,8 @@ export default function App() {
         minWidth: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
         overflow: "hidden",
         transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
-        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(244,242,235,0.98)",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(244,242,235,0.98)",   
+background: isDark ? "rgba(11,11,14,0.98)" : "rgba(237,234,226,0.98)",
         borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
         backdropFilter: "blur(20px)",
         display: "flex", 
@@ -1579,10 +1580,10 @@ export default function App() {
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
-              display: "flex", alignItems: "flex-end", gap: 12,
+              display: "flex", alignItems: "flex-end", gap: 8,
               background: isDark ? "rgba(20,20,26,0.98)" : "rgba(248,246,241,0.98)",
               border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
-              borderRadius: 18, padding: "10px 14px",
+              borderRadius: 18, padding: "8px 12px",
               backdropFilter: "blur(12px)",
               boxShadow: "0 0 0 1px rgba(108,71,255,0.06), 0 8px 32px rgba(0,0,0,0.3)",
               transition: "border-color 0.2s"
@@ -1619,40 +1620,44 @@ export default function App() {
                 }}
               />
             
-             <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
-  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-  background: attachedImage ? "rgba(16,185,129,0.15)" : "rgba(108,71,255,0.12)",
-  border: attachedImage ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(108,71,255,0.35)",
-  color: attachedImage ? "#10b981" : "#c4b5fd",
-  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
-}}>📎</button>
-             <MicButton
-               onTranscript={t => setInput(t)}
-               onAutoSend={t => { setInput(""); sendMessage(t); }}
-               accent={accent}
-               voiceSettings={voiceSettings}
-               voiceMode={voiceMode}
-             />
-             <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) stopSpeaking(); }} title={voiceMode ? "Mute AI voice" : "Unmute AI voice"} style={{
-               width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-               background: voiceMode ? `${accent}22` : "rgba(108,71,255,0.08)",
-               border: voiceMode ? `1px solid ${accent}55` : "1px solid rgba(108,71,255,0.2)",
-               color: voiceMode ? accent : "rgba(108,71,255,0.4)",
-               cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-               transition: "all 0.2s"
-             }}>
-               <span className="ms" style={{fontSize: 20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
-             </button>
+             <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
+               <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
+                 width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                 background: attachedImage ? "rgba(16,185,129,0.12)" : "transparent",
+                 border: "none",
+                 color: attachedImage ? "#10b981" : isDark ? "#4b5563" : "#9ca3af",
+                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                 transition: "all 0.15s"
+               }}>
+                 <span className="ms" style={{fontSize: 18}}>attach_file</span>
+               </button>
+               <MicButton
+                 onTranscript={t => setInput(t)}
+                 onAutoSend={t => { setInput(""); sendMessage(t); }}
+                 accent={accent}
+                 voiceSettings={voiceSettings}
+                 voiceMode={voiceMode}
+               />
+               <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) stopSpeaking(); }} title={voiceMode ? "Mute AI voice" : "Unmute AI voice"} style={{
+                 width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                 background: "transparent", border: "none",
+                 color: voiceMode ? accent : isDark ? "#4b5563" : "#9ca3af",
+                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                 transition: "all 0.15s"
+               }}>
+                 <span className="ms" style={{fontSize: 18}}>{voiceMode ? "volume_up" : "volume_off"}</span>
+               </button>
+             </div>
              <button onClick={() => sendMessage()} title="Send" style={{
-               width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-               background: input.trim() || attachedImage ? `linear-gradient(135deg, ${accent}, ${accent}cc)` : "rgba(108,71,255,0.08)",
-               border: `1px solid ${accent}40`,
-               color: "#fff", cursor: "pointer",
-               display: "flex", alignItems: "center", justifyContent: "center",
-               boxShadow: input.trim() ? `0 0 16px ${accent}40` : "none",
+               width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+               background: input.trim() || attachedImage ? `linear-gradient(135deg, ${accent}, ${accent}cc)` : isDark ? "rgba(108,71,255,0.08)" : "rgba(0,0,0,0.06)",
+               border: "none",
+               color: input.trim() || attachedImage ? "#fff" : isDark ? "#4b5563" : "#9ca3af",
+               cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+               boxShadow: input.trim() ? `0 0 12px ${accent}40` : "none",
                transition: "all 0.2s"
              }}>
-               <span className="ms" style={{fontSize: 20}}>send</span>
+               <span className="ms" style={{fontSize: 18}}>arrow_upward</span>
              </button>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "0 2px" }}>
