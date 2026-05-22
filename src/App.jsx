@@ -735,7 +735,7 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
       style={{
         width: 32, height: 32, borderRadius: 8, flexShrink: 0,
         background: "transparent", border: "none",
-        color: listening ? "#e11d48" : isDark ? "#4b5563" : "#9ca3af",
+        color: listening ? "#e11d48" : "#6b7280",
         cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
         transition: "all 0.15s",
         animation: listening ? "kpulse 1s ease-in-out infinite" : "none"
