@@ -22,7 +22,7 @@ function getSmartSystemPrompt(text) {
   const isImage = /generate|create|draw|make|design|paint|render|image|photo|picture|wallpaper|logo|album|cover|portrait|art/i.test(t);
   const full = buildSystemPrompt();
   if (isImage) return full;
-  return full.slice(0, 800);
+  return full.slice(0, 300);
 }
 
 function buildSystemPrompt() {
