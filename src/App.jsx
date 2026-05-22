@@ -1141,6 +1141,8 @@ textarea::placeholder { color: #888; }
               </div>
             </div>
 
+            </div>{/* end Look section */}
+            <div className="settings-section" style={{ display: "none" }}>
             {/* Voice */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>VOICE</div>
@@ -1216,6 +1218,8 @@ textarea::placeholder { color: #888; }
               </div>
             </div>
 
+            </div>{/* end Voice section */}
+            <div className="settings-section" style={{ display: "none" }}>
             {/* Clear memory */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>MEMORY</div>
@@ -1256,6 +1260,8 @@ textarea::placeholder { color: #888; }
               </div>
             </div>
 
+            </div>{/* end Memory section */}
+            <div className="settings-section" style={{ display: "none" }}>
             {/* Model info */}
             <div style={{ paddingTop: 14, borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)" }}>
               <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 8 }}>MODEL</div>
@@ -1266,6 +1272,7 @@ textarea::placeholder { color: #888; }
                 <div>Location · Kigali, Rwanda</div>
               </div>
             </div>
+            </div>{/* end System section */}
           </div>
         )}
 
