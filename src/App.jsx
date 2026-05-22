@@ -398,10 +398,10 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
             ? isDark ? `${accent}25` : `${accent}12`
-            : isDark ? "rgba(255,255,255,0.04)" : "rgba(255,254,252,0.92)",
+            : isDark ? "rgba(255,255,255,0.04)" : "rgba(218,218,213,0.95)",
           border: isUser
             ? `1px solid ${accent}40`
-            : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)",
+            : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
           color: isUser ? (isDark ? "#ddd6fe" : "#1a1714") : (isDark ? "#c9d1d9" : "#0f0d12"),
           fontSize: 14.5, lineHeight: 1.75,
           backdropFilter: "blur(8px)",
@@ -450,7 +450,7 @@ function speakText(text, voiceSettings = {}) {
   window.speechSynthesis.speak(utt);
 }
 
-function MicButton({ onTranscript, accent, voiceSettings, voiceMode, onToggleVoiceMode }) {
+function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode }) {
   const [listening, setListening] = useState(false);
   const recRef = useRef(null);
 
@@ -465,8 +465,9 @@ function MicButton({ onTranscript, accent, voiceSettings, voiceMode, onToggleVoi
     rec.interimResults = false;
     rec.onresult = e => {
       const t = Array.from(e.results).map(r => r[0].transcript).join(" ");
-      onTranscript(t);
       if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+      onTranscript(t);
+      onAutoSend(t);
     };
     rec.onend = () => {
       setListening(false);
@@ -723,7 +724,7 @@ export default function App() {
   return (
     <div style={{
       position: "fixed", inset: 0,
-      background: isDark ? "#0b0b0e" : "#f0ede8",
+      background: isDark ? "#0b0b0e" : "#f5f5f0",
       fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
       color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
     }}>
@@ -773,7 +774,7 @@ textarea::placeholder { color: #888; }
         minWidth: sidebarOpen ? 260 : 0,
         overflow: "hidden",
         transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
-        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(245,242,237,0.99)",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(236,236,230,0.99)",
         borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
@@ -853,7 +854,7 @@ textarea::placeholder { color: #888; }
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(248,245,240,0.97)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(236,236,230,0.97)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -959,7 +960,7 @@ textarea::placeholder { color: #888; }
           <div style={{
             position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 50,
             width: "min(340px, 100vw)",
-            background: isDark ? "#16161e" : "#faf8f5",
+            background: isDark ? "#16161e" : "#ebebе6",
             border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
             borderRadius: "16px 0 0 16px", padding: "20px",
             boxShadow: "-8px 0 40px rgba(0,0,0,0.4)",
@@ -1155,14 +1156,14 @@ textarea::placeholder { color: #888; }
         {/* Input */}
         <div style={{
           padding: "12px 16px 16px",
-          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(248,245,240,0.98)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(236,236,230,0.98)", backdropFilter: "blur(24px)",
           borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.09)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
               display: "flex", alignItems: "flex-end", gap: 12,
-              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(255,255,255,0.98)",
-              border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.10)",
+              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(225,225,220,0.98)",
+              border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
               boxShadow: "0 0 0 1px rgba(108,71,255,0.06), 0 8px 32px rgba(0,0,0,0.3)",
@@ -1218,7 +1219,7 @@ textarea::placeholder { color: #888; }
               }}>
                 <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
               </button>
-              <MicButton onTranscript={t => { setInput(prev => prev ? prev + " " + t : t); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
+              <MicButton onTranscript={t => { setInput(prev => prev ? prev + " " + t : t); }} onAutoSend={t => { setInput(t); setTimeout(() => sendMessage(), 50); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
             </div>
             <p style={{
               textAlign: "center", fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
