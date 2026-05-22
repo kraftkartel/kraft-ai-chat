@@ -1633,6 +1633,16 @@ export default function App() {
                voiceSettings={voiceSettings}
                voiceMode={voiceMode}
              />
+             <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) stopSpeaking(); }} title={voiceMode ? "Mute AI voice" : "Unmute AI voice"} style={{
+               width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+               background: voiceMode ? `${accent}22` : "rgba(108,71,255,0.08)",
+               border: voiceMode ? `1px solid ${accent}55` : "1px solid rgba(108,71,255,0.2)",
+               color: voiceMode ? accent : "rgba(108,71,255,0.4)",
+               cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+               transition: "all 0.2s"
+             }}>
+               <span className="ms" style={{fontSize: 20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
+             </button>
              <button onClick={() => sendMessage()} title="Send" style={{
                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
                background: input.trim() || attachedImage ? `linear-gradient(135deg, ${accent}, ${accent}cc)` : "rgba(108,71,255,0.08)",
