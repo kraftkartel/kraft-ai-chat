@@ -677,8 +677,8 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
           padding: "13px 18px",
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
-            ? isDark ? `${accent}25` : `${accent}12`
-            : isDark ? "rgba(255,255,255,0.04)" : "#f8f6f1",
+  ? isDark ? `${accent}25` : `${accent}12`
+  : isDark ? "rgba(35,35,45,0.95)" : "#f8f6f1",
           border: isUser
             ? `1px solid ${accent}40`
             : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #d4d0c5",
@@ -1141,7 +1141,7 @@ export default function App() {
   return (
   <div style={{
     position: "fixed", inset: 0,
-    background: isDark ? "#0b0b0e" : "#f0ede6",
+    background: isDark ? "#0a0a0f" : "#f5f3eb",
     fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
     color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
   }}>
@@ -1151,70 +1151,57 @@ export default function App() {
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
 
-  @keyframes msgIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-  @keyframes kpulse { 0%, 100% { opacity: 0.2; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1.3); } }
+  @keyframes msgIn { 
+    from { opacity: 0; transform: translateY(20px) scale(0.95); } 
+    to { opacity: 1; transform: translateY(0) scale(1); } 
+  }
+  @keyframes kpulse { 
+    0%, 100% { opacity: 0.3; transform: scale(0.8); } 
+    50% { opacity: 1; transform: scale(1.25); } 
+  }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
-  /* Material Symbols Fix */
+  /* Material Icons Fix */
   .ms {
-    font-family: 'Material Symbols Rounded';
-    font-style: normal;
-    font-weight: normal;
-    font-size: 20px;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-smoothing: antialiased;
-    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    font-family: 'Material Symbols Rounded' !important;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-size: 22px;
   }
 
-  /* ==================== LIGHT MODE FIXES ==================== */
-  body {
-    background: #f5f3eb;
-  }
-
-  /* Light Mode Backgrounds */
-  div[style*="background: #f5f3eb"],
-  div[style*="background: rgba(244,242,235"],
-  div[style*="background: rgba(248,246,241"] {
-    background: #f5f3eb !important;
-  }
-
-  /* Assistant Message - Light Mode */
-  div[style*="background: #f8f6f1"] {
-    background: #f8f6f1 !important;
-    border: 1px solid #d4d0c5 !important;
-    color: #1f1c17 !important;
-  }
-
-  /* Text Colors */
-  .light-mode-text, p, span, div, button {
-    color: #1f1c17;
-  }
-
-  /* Secondary Text */
-  .light-mode-secondary {
-    color: #6b665c !important;
-  }
-
-  /* Buttons */
+  /* ==================== DARK MODE IMPROVEMENTS ==================== */
   button {
-    color: #1f1c17;
+    color: #e2e8f0;
+  }
+
+  /* Better Dark Mode Buttons */
+  button[style*="color: #4b3a8a"], 
+  button[style*="color: #a78bfa"] {
+    color: #c4b5fd !important;
+  }
+
+  /* Assistant Messages Dark Mode */
+  div[style*="background: rgba(255,255,255,0.04)"] {
+    background: rgba(30, 30, 40, 0.95) !important;
+    border: 1px solid rgba(108,71,255,0.2) !important;
+    color: #e2e8f0 !important;
+  }
+
+  /* Light Mode */
+  div[style*="background: #f8f6f1"],
+  div[style*="background: rgba(248,246,241"] {
+    background: #f8f6f1 !important;
+    color: #1f1c17 !important;
   }
 
   textarea::placeholder {
     color: #8c8779 !important;
   }
 
-  /* Settings Panel */
-  div[style*="background: #f8f6f1"] {
-    background: #f8f6f1 !important;
+  /* Topbar & Sidebar */
+  div[style*="background: rgba(11,11,14"] {
+    background: rgba(15,15,20,0.98) !important;
   }
 `}</style>
       {/* Mobile overlay backdrop */}
