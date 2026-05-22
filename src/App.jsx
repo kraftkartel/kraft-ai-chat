@@ -1739,98 +1739,13 @@ export default function App() {
                 }}
               />
             
-              <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
+             <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
   width: 40, height: 40, borderRadius: 12, flexShrink: 0,
   background: attachedImage ? "rgba(16,185,129,0.15)" : "rgba(108,71,255,0.12)",
   border: attachedImage ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(108,71,255,0.35)",
   color: attachedImage ? "#10b981" : "#c4b5fd",
   cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
 }}>📎</button>
-
-<button onClick={sendMessage} disabled={loading || (!input.trim() && !attachedImage)} style={{
-  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-  background: loading || !input.trim()
-    ? "rgba(108,71,255,0.12)"
-    : `linear-gradient(135deg, ${accent}, ${accent}dd)`,
-  border: "1px solid rgba(108,71,255,0.4)",
-  color: loading || !input.trim() ? "#a78bfa" : "#fff",
-  cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-  display: "flex", alignItems: "center", justifyContent: "center",
-  fontSize: 18, transition: "all 0.2s",
-  boxShadow: loading || !input.trim() ? "none" : `0 0 20px ${accent}60`
-}}>
-  {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
-</button>
-
-<button onClick={() => { setVoiceMode(v => !v); if (voiceMode) window.speechSynthesis.cancel(); }} style={{
-  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-  background: voiceMode ? `${accent}35` : "rgba(108,71,255,0.12)",
-  border: voiceMode ? `1px solid ${accent}90` : "1px solid rgba(108,71,255,0.35)",
-  color: voiceMode ? accent : "#c4b5fd",
-  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-  transition: "all 0.2s",
-  boxShadow: voiceMode ? `0 0 16px ${accent}50` : "none"
-}}>
-  <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
-</button>
-              <button
-                onClick={sendMessage}
-                disabled={loading || (!input.trim() && !attachedImage) || undefined}
-                style={{
-                  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                  background: loading || !input.trim()
-                    ? "rgba(108,71,255,0.08)"
-                    : `linear-gradient(135deg, ${accent}, ${accent}cc)`,
-                  border: "1px solid rgba(108,71,255,0.25)",
-                  color: loading || !input.trim() ? "#4b3a8a" : "#fff",
-                  cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 18, transition: "all 0.2s",
-                  boxShadow: loading || !input.trim() ? "none" : `0 0 20px ${accent}70`
-                }}
-              >
-                {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
-              </button>
-                            <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
-                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                background: attachedImage ? "rgba(16,185,129,0.15)" : "rgba(108,71,255,0.12)",
-                border: attachedImage ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(108,71,255,0.35)",
-                color: attachedImage ? "#10b981" : "#c4b5fd",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
-              }}>📎</button>
-
-              <button
-                onClick={sendMessage}
-                disabled={loading || (!input.trim() && !attachedImage)}
-                style={{
-                  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                  background: loading || !input.trim()
-                    ? "rgba(108,71,255,0.12)"
-                    : `linear-gradient(135deg, ${accent}, ${accent}dd)`,
-                  border: "1px solid rgba(108,71,255,0.4)",
-                  color: loading || !input.trim() ? "#a78bfa" : "#fff",
-                  cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 18, transition: "all 0.2s",
-                  boxShadow: loading || !input.trim() ? "none" : `0 0 20px ${accent}60`
-                }}
-              >
-                {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
-              </button>
-
-              <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) window.speechSynthesis.cancel(); }} style={{
-                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                background: voiceMode ? `${accent}35` : "rgba(108,71,255,0.12)",
-                border: voiceMode ? `1px solid ${accent}90` : "1px solid rgba(108,71,255,0.35)",
-                color: voiceMode ? accent : "#c4b5fd",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all 0.2s",
-                boxShadow: voiceMode ? `0 0 16px ${accent}50` : "none"
-              }}>
-                <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
-              </button>
-
-              <MicButton onTranscript={t => { setInput(t); }} onAutoSend={t => { setInput(""); sendMessage(t); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "0 2px" }}>
               <p style={{ fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)", margin: 0, letterSpacing: 1.5 }}>
