@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
-const CORRECT_PIN = "0788381120";
-const HINT = "My phone number";
+const CORRECT_PIN = atob("MDc4ODM4MTEyMA==");
+const HINT = "Contact Kraft Kartel on WhatsApp: +250 788 381 120";
 
 function GlitchCanvas() {
   const canvasRef = useRef(null);
@@ -19,24 +19,24 @@ function GlitchCanvas() {
     const grid = Array.from({ length: cols }, () =>
       Array.from({ length: rows }, () => ({
         alpha: Math.random(),
-        speed: Math.random() * 0.02 + 0.005,
+        speed: Math.random() * 0.06 + 0.02,
         offset: Math.random() * Math.PI * 2,
         char: Math.random() > 0.7 ? String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96)) : Math.floor(Math.random() * 10).toString(),
-        changeRate: Math.random() * 0.03,
+        changeRate: Math.random() * 0.09,
       }))
     );
 
     const particles = Array.from({ length: 40 }, () => ({
       x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
       r: Math.random() * 2 + 0.5,
       alpha: Math.random() * 0.5 + 0.2,
     }));
 
     function draw() {
       t += 0.016;
-      ctx.fillStyle = "rgba(7,7,13,0.18)";
+      ctx.fillStyle = "rgba(7,7,13,0.12)";
       ctx.fillRect(0, 0, W, H);
 
       // Grid lines
@@ -50,7 +50,7 @@ function GlitchCanvas() {
       }
 
       // Scanline
-      const scanY = (t * 60) % H;
+      const scanY = (t * 120) % H;
       const sg = ctx.createLinearGradient(0, scanY - 40, 0, scanY + 40);
       sg.addColorStop(0, "rgba(108,71,255,0)");
       sg.addColorStop(0.5, "rgba(108,71,255,0.08)");
@@ -67,7 +67,7 @@ function GlitchCanvas() {
               ? String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))
               : Math.floor(Math.random() * 10).toString();
           }
-          const a = (Math.sin(cell.offset) * 0.5 + 0.5) * 0.35;
+          const a = (Math.sin(cell.offset) * 0.5 + 0.5) * 0.7;
           ctx.fillStyle = `rgba(108,71,255,${a})`;
           ctx.font = "11px monospace";
           ctx.fillText(cell.char, ci * 20 + 4, ri * 20 + 14);
@@ -91,8 +91,8 @@ function GlitchCanvas() {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            ctx.strokeStyle = `rgba(108,71,255,${(1 - dist / 120) * 0.15})`;
+          if (dist < 160) {
+            ctx.strokeStyle = `rgba(108,71,255,${(1 - dist / 120) * 0.4})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -153,7 +153,7 @@ function TypingText({ lines, speed = 40 }) {
   }, [lineIdx, charIdx, lines, speed]);
 
   return (
-    <div style={{ fontFamily: "monospace", fontSize: 13, lineHeight: 2, color: "rgba(167,139,250,0.8)" }}>
+    <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 13, lineHeight: 2, color: "rgba(167,139,250,0.8)" }}>
       {lines.map((line, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ color: "rgba(108,71,255,0.6)" }}>{">"}</span>
@@ -218,10 +218,11 @@ export default function KraftLogin({ onUnlock }) {
       background: "#07070d",
       display: "flex",
       fontFamily: "'DM Sans', -apple-system, sans-serif",
+      letterSpacing: 0.3,
       overflow: "hidden",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
         @keyframes kshake {
           0%,100%{transform:translateX(0)}
           20%{transform:translateX(-12px)}
@@ -432,7 +433,7 @@ export default function KraftLogin({ onUnlock }) {
               marginBottom: 20, fontSize: 13,
               color: "#a78bfa", fontFamily: "monospace",
             }}>
-              <span style={{ color: "rgba(108,71,255,0.5)" }}>{">"} HINT: </span>
+              <span style={{ color: "rgba(108,71,255,0.5)" }}>{">"} FORGOT PIN? </span>
               <span style={{ color: "#c4b5fd", fontWeight: 600 }}>{HINT}</span>
             </div>
           )}
@@ -480,8 +481,8 @@ export default function KraftLogin({ onUnlock }) {
                         </>
                       ) : isHint ? (
                         <>
-                          <span style={{ fontSize: 16 }}>?</span>
-                          <span style={{ fontSize: 8, letterSpacing: 1, opacity: 0.6 }}>HINT</span>
+                          <span style={{ fontSize: 16 }}>✉</span>
+                          <span style={{ fontSize: 8, letterSpacing: 1, opacity: 0.6 }}>CONTACT</span>
                         </>
                       ) : (
                         <span>{k}</span>
