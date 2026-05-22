@@ -60,7 +60,7 @@ RULES:
 }
 
 
-function StarCanvas({ responding }) {
+function StarCanvas({ responding, isDark }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ responding: false });
 
@@ -85,6 +85,7 @@ function StarCanvas({ responding }) {
       twinkleOffset: Math.random() * Math.PI * 2,
       vx: (Math.random() - 0.5) * 0.04,
       vy: (Math.random() - 0.5) * 0.04,
+      drift: Math.random() * 0.03 + 0.01,
       trail: [],
     }));
 
@@ -163,7 +164,7 @@ function StarCanvas({ responding }) {
         // Star glow for brighter stars
         if (s.r > 1.2) {
           const sg = ctx.createRadialGradient(rx, ry, 0, rx, ry, s.r * 3.5);
-          sg.addColorStop(0, `rgba(200,190,255,${s.alpha * 0.4})`);
+          sg.addColorStop(0, isDark ? `rgba(200,190,255,${s.alpha * 0.4})` : `rgba(180,210,255,${s.alpha * 0.5})`);
           sg.addColorStop(1, "rgba(0,0,0,0)");
           ctx.fillStyle = sg;
           ctx.beginPath();
@@ -173,10 +174,11 @@ function StarCanvas({ responding }) {
 
         ctx.beginPath();
         ctx.arc(rx, ry, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(235,225,255,${s.alpha})`;
+        ctx.fillStyle = isDark ? `rgba(235,225,255,${s.alpha})` : `rgba(200,220,255,${s.alpha})`;
         ctx.fill();
 
-        s.x += s.vx; s.y += s.vy;
+        s.x += s.vx + (isDark ? 0 : Math.sin(t + s.twinkleOffset) * 0.3);
+        s.y += s.vy + (isDark ? 0 : s.drift);
         if (s.x < 0) s.x = W; if (s.x > W) s.x = 0;
         if (s.y < 0) s.y = H; if (s.y > H) s.y = 0;
       });
@@ -758,11 +760,11 @@ export default function App() {
   return (
     <div style={{
       position: "fixed", inset: 0,
-      background: isDark ? "#0b0b0e" : "#f5f5f0",
+      background: isDark ? "#0b0b0e" : "#e8e8e2",
       fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
       color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
     }}>
-      <StarCanvas responding={loading} />
+      <StarCanvas responding={loading} isDark={isDark} />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -808,7 +810,7 @@ textarea::placeholder { color: #888; }
         minWidth: sidebarOpen ? 260 : 0,
         overflow: "hidden",
         transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
-        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(236,236,230,0.99)",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(228,228,222,0.99)",
         borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
@@ -891,7 +893,7 @@ textarea::placeholder { color: #888; }
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(236,236,230,0.97)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(228,228,222,0.97)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -1193,13 +1195,13 @@ textarea::placeholder { color: #888; }
         {/* Input */}
         <div style={{
           padding: "12px 16px 16px",
-          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(236,236,230,0.98)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.95)" : "rgba(228,228,222,0.98)", backdropFilter: "blur(24px)",
           borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.09)"
         }}>
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
               display: "flex", alignItems: "flex-end", gap: 12,
-              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(225,225,220,0.98)",
+              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(215,215,210,0.98)",
               border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
