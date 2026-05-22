@@ -1151,69 +1151,49 @@ export default function App() {
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
 
-  @keyframes msgIn {
-    from { opacity: 0; transform: translateY(16px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes kpulse {
-    0%, 100% { opacity: 0.2; transform: scale(0.7); }
-    50% { opacity: 1; transform: scale(1.3); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; } to { opacity: 1; }
-  }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes kpulse { 0%, 100% { opacity: 0.2; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1.3); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
-  /* ==================== LIGHT MODE IMPROVEMENTS ==================== */
-  body, .light-mode-fix {
-    color: #1a1714;
-  }
+  /* ==================== LIGHT MODE FIXES ==================== */
+  .light-mode-text { color: #1f1c17 !important; }
+  .light-mode-secondary { color: #6b665c !important; }
 
-  /* Message bubbles - Light mode */
-  .light .message-assistant {
+  /* Assistant Messages - Light Mode */
+  div[style*="background: rgba(218,218,213,0.95)"] {
     background: #f8f6f1 !important;
     border: 1px solid #d4d0c5 !important;
-    color: #1a1714 !important;
+    color: #1f1c17 !important;
   }
 
-  /* Sidebar & Topbar */
-  .light sidebar, .light topbar {
-    background: #f4f2eb !important;
-    border-color: #d4d0c5 !important;
+  /* Buttons in Light Mode */
+  button {
+    color: #1f1c17;
   }
 
-  /* Input area */
-  .light .input-area {
-    background: #f8f6f1 !important;
-    border-color: #d4d0c5 !important;
+  /* Settings Tabs */
+  button[style*="color: #9ca3af"] {
+    color: #6b665c !important;
   }
 
+  /* Sidebar Text */
+  .light-mode-sidebar * {
+    color: #1f1c17;
+  }
+
+  /* Input Placeholder */
   textarea::placeholder {
     color: #8c8779 !important;
   }
 
-  /* Better contrast for text */
-  .light p, .light span, .light div {
-    color: #1f1c17;
-  }
-
-  .light .secondary-text {
-    color: #6b665c !important;
-  }
-
-  /* Settings panel light mode */
-  .light .settings-panel {
-    background: #f8f6f1 !important;
-    border-color: #d4d0c5 !important;
-  }
-
-  /* Buttons in light mode */
-  .light button {
-    color: #1a1714;
+  /* Topbar & Sidebar Light Mode */
+  div[style*="background: rgba(228,228,222,0.97)"],
+  div[style*="background: rgba(244,242,235,0.98)"] {
+    background: #f4f2eb !important;
   }
 `}</style>
-
       {/* Mobile overlay backdrop */}
       {sidebarOpen && (
         <div onClick={() => setSidebarOpen(false)} style={{
