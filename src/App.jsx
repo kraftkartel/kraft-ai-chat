@@ -678,53 +678,66 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
   const [listening, setListening] = useState(false);
   const recRef = useRef(null);
 
+  const onTranscriptRef = useRef(onTranscript);
+  const onAutoSendRef = useRef(onAutoSend);
+  useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
+  useEffect(() => { onAutoSendRef.current = onAutoSend; }, [onAutoSend]);
+
   const toggle = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in your browser.");
-      return;
-    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Speech recognition not supported in this browser."); return; }
+    if (listening) { recRef.current?.stop(); setListening(false); return; }
 
-    if (listening) {
-      recRef.current?.stop();
-      setListening(false);
-      return;
-    }
-
-    stopSpeaking(); // Stop AI from talking when user starts speaking
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-    recRef.current = recognition;
-
+    stopSpeaking();
+    const rec = new SR();
+    recRef.current = rec;
+    rec.lang = "en-US";
+    rec.interimResults = true;
+    rec.continuous = false;
     let finalTranscript = "";
+    let silenceTimer = null;
 
-    recognition.onresult = (event) => {
+    rec.onresult = e => {
+      stopSpeaking();
       let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + " ";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          finalTranscript += e.results[i][0].transcript + " ";
         } else {
-          interim = event.results[i][0].transcript;
+          interim = e.results[i][0].transcript;
         }
       }
-      onTranscript(finalTranscript + interim);
+      onTranscriptRef.current(finalTranscript + interim);
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        const text = finalTranscript.trim();
+        if (text) {
+          rec.stop();
+          setListening(false);
+          onTranscriptRef.current("");
+          onAutoSendRef.current(text);
+          finalTranscript = "";
+        }
+      }, 900);
     };
 
-    recognition.onend = () => {
+    rec.onend = () => {
       setListening(false);
+      clearTimeout(silenceTimer);
       const text = finalTranscript.trim();
-      if (text) onAutoSend(text);
+      if (text) {
+        onTranscriptRef.current("");
+        onAutoSendRef.current(text);
+      }
     };
 
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event);
+    rec.onerror = (err) => {
+      console.error("Speech error:", err);
       setListening(false);
+      clearTimeout(silenceTimer);
     };
 
-    recognition.start();
+    rec.start();
     setListening(true);
   };
 
@@ -1041,16 +1054,9 @@ export default function App() {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 
-  /* DARK MODE BUTTONS */
+  /* BUTTON COLORS — never force white globally */
   button {
-    color: #e2e8f0 !important;
-  }
-
-  /* LIGHT MODE BUTTONS */
-  div[style*="background: #f8f6f1"] button,
-  div[style*="background: rgba(248,246,241"] button,
-  div[style*="background: rgba(244,242,235"] button {
-    color: #1f1c17 !important;
+    color: inherit;
   }
 
   /* THIN ADAPTIVE SCROLLBAR */
@@ -1163,14 +1169,15 @@ background: isDark ? "rgba(11,11,14,0.98)" : "rgba(237,234,226,0.98)",
         </div>
       </div>
       {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", position: "relative", zIndex: 1, minWidth: 0, height: "100vh", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", position: "relative", zIndex: 1, minWidth: 0, height: "100vh", overflow: "hidden", isolation: "isolate" }}>
 
         {/* Topbar */}
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(244,242,235,0.97)", backdropFilter: "blur(24px)",
-          position: "sticky", top: 0, zIndex: 10
+          background: isDark ? "rgba(11,11,14,0.97)" : "rgba(244,242,235,0.99)", backdropFilter: "blur(24px)",
+          position: "sticky", top: 0, zIndex: 10, flexShrink: 0,
+          WebkitBackdropFilter: "blur(24px)"
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
             background: isDark ? "rgba(108,71,255,0.08)" : "rgba(0,0,0,0.06)", border: isDark ? "1px solid rgba(108,71,255,0.15)" : "1px solid rgba(0,0,0,0.1)",
@@ -1222,7 +1229,7 @@ background: isDark ? "rgba(11,11,14,0.98)" : "rgba(237,234,226,0.98)",
           flex: 1, overflowY: "auto", padding: "24px 16px 12px",
           display: "flex", flexDirection: "column", gap: 24,
           maxWidth: 860, width: "100%", margin: "0 auto", alignSelf: "center",
-          boxSizing: "border-box"
+          boxSizing: "border-box", minWidth: 0
         }}>
           {activeChat?.messages.map((m, i) => (
             <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} voiceMode={voiceMode} voiceSettings={voiceSettings} />
