@@ -367,11 +367,52 @@ function renderMarkdown(text, isDark, accent) {
     // Image
     const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)/);
     if (imgMatch) {
-     
+      const [, alt, src] = imgMatch;
+      elements.push(<ImageBlock key={i} src={src} alt={alt} isDark={isDark} accent={accent} />);
+      i++;
+      continue;
+    }
+
+    // Code block
+    if (line.startsWith("```")) {
+      const lang = line.slice(3).trim();
+      const codeLines = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      elements.push(
+        <div key={i} style={{ position: "relative", margin: "12px 0" }}>
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            background: "#0d1117", borderRadius: "10px 10px 0 0",
+            padding: "6px 14px", borderBottom: "1px solid rgba(108,71,255,0.2)"
+          }}>
+            <span style={{ fontSize: 11, color: "#a78bfa", fontFamily: "monospace", letterSpacing: 1 }}>
+              {lang || "code"}
+            </span>
+            <button onClick={() => navigator.clipboard.writeText(codeLines.join("\n"))} style={{
+              background: "rgba(108,71,255,0.15)", border: "1px solid rgba(108,71,255,0.3)",
+              color: "#a78bfa", padding: "2px 10px", borderRadius: 6, fontSize: 11,
+              cursor: "pointer", fontFamily: "inherit"
+            }}>copy</button>
+          </div>
+          <pre style={{
+            background: "#0a0f1a", margin: 0, padding: "14px 16px",
+            borderRadius: "0 0 10px 10px", overflowX: "auto",
+            fontSize: 13, lineHeight: 1.7, color: "#e2e8f0",
+            fontFamily: "'Fira Code', 'Cascadia Code', monospace",
+            border: "1px solid rgba(108,71,255,0.12)", borderTop: "none"
+          }}>
+            {codeLines.join("\n")}
+          </pre>
+        </div>
       );
       i++;
       continue;
     }
+
     // Heading
     if (line.startsWith("### ")) {
       elements.push(<h3 key={i} style={{ color: "#c4b5fd", fontSize: 15, fontWeight: 600, margin: "14px 0 6px", letterSpacing: 0.3 }}>{line.slice(4)}</h3>);
@@ -395,7 +436,6 @@ function renderMarkdown(text, isDark, accent) {
   }
   return elements;
 }
-
 function inlineFormat(text) {
   const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
   return parts.map((p, i) => {
