@@ -1198,22 +1198,22 @@ export default function App() {
         }} />
       )}
 
-      {/* Sidebar */}
+            {/* Sidebar */}
       <div style={{
-        
-
-  width: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
-  minWidth: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
-  overflow: "hidden",
-  transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
-  background: isDark ? "rgba(11,11,14,0.98)" : "rgba(244,242,235,0.98)",
-  borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
-  backdropFilter: "blur(20px)",
-  display: "flex", flexDirection: "column",
-  position: "relative",
-  height: "100vh",
-  zIndex: 4, flexShrink: 0
-}}>
+        width: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
+        minWidth: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
+        overflow: "hidden",
+        transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(244,242,235,0.98)",
+        borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
+        backdropFilter: "blur(20px)",
+        display: "flex", 
+        flexDirection: "column",
+        position: "relative",
+        height: "100vh",
+        zIndex: 4, 
+        flexShrink: 0
+      }}>
         <div style={{ padding: "18px 14px 12px", borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -1281,7 +1281,6 @@ export default function App() {
           KRAFT AI · KIGALI, RWANDA
         </div>
       </div>
-
       {/* Main */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", position: "relative", zIndex: 1, minWidth: 0, height: "100vh", overflow: "hidden" }}>
 
