@@ -678,100 +678,72 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
   const [listening, setListening] = useState(false);
   const recRef = useRef(null);
 
-  const onTranscriptRef = useRef(onTranscript);
-  const onAutoSendRef = useRef(onAutoSend);
-
-  useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
-  useEffect(() => { onAutoSendRef.current = onAutoSend; }, [onAutoSend]);
-
   const toggle = () => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { 
-      alert("Speech recognition not supported in this browser."); 
-      return; 
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in your browser.");
+      return;
     }
 
-    if (listening) { 
-      recRef.current?.stop(); 
-      setListening(false); 
-      return; 
+    if (listening) {
+      recRef.current?.stop();
+      setListening(false);
+      return;
     }
 
-    // Stop any ongoing AI speech when starting to listen
-    stopSpeaking();
+    stopSpeaking(); // Stop AI from talking when user starts speaking
 
-    const rec = new SR();
-    recRef.current = rec;
-    rec.lang = "en-US";
-    rec.interimResults = true;
-    rec.continuous = false;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recRef.current = recognition;
 
     let finalTranscript = "";
-    let silenceTimer = null;
 
-    rec.onresult = e => {
-      stopSpeaking(); // Interrupt AI speech immediately
+    recognition.onresult = (event) => {
       let interim = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          finalTranscript += e.results[i][0].transcript + " ";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + " ";
         } else {
-          interim = e.results[i][0].transcript;
+          interim = event.results[i][0].transcript;
         }
       }
-      onTranscriptRef.current(finalTranscript + interim);
-
-      clearTimeout(silenceTimer);
-      silenceTimer = setTimeout(() => {
-        const text = finalTranscript.trim();
-        if (text) {
-          rec.stop();
-          setListening(false);
-          onTranscriptRef.current("");
-          onAutoSendRef.current(text);
-          finalTranscript = "";
-        }
-      }, 800); // Slightly shorter for better responsiveness
+      onTranscript(finalTranscript + interim);
     };
 
-    rec.onend = () => {
+    recognition.onend = () => {
       setListening(false);
-      clearTimeout(silenceTimer);
       const text = finalTranscript.trim();
-      if (text) {
-        onTranscriptRef.current("");
-        onAutoSendRef.current(text);
-      }
+      if (text) onAutoSend(text);
     };
 
-    rec.onerror = (err) => {
-      console.error("Speech error:", err);
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event);
       setListening(false);
-      clearTimeout(silenceTimer);
     };
 
-    rec.start();
+    recognition.start();
     setListening(true);
   };
 
   return (
     <button 
       onClick={toggle} 
-      title={listening ? "Stop listening" : "Voice input (click to speak)"} 
+      title={listening ? "Stop Listening" : "Voice Input"}
       style={{
-        width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-        background: listening ? "rgba(225,29,72,0.15)" : `${accent}15`,
-        border: listening ? "1px solid rgba(225,29,72,0.4)" : `1px solid ${accent}40`,
+        width: 40, 
+        height: 40, 
+        borderRadius: 12, 
+        background: listening ? "rgba(225,29,72,0.2)" : `${accent}15`,
+        border: listening ? "1px solid #e11d48" : `1px solid ${accent}40`,
         color: listening ? "#e11d48" : accent,
-        cursor: "pointer", 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center",
-        transition: "all 0.2s",
-        animation: listening ? "kpulse 1s ease-in-out infinite" : "none"
+        cursor: "pointer",
+        animation: listening ? "kpulse 1.2s infinite" : "none"
       }}
     >
-      <span className="ms" style={{fontSize:20}}>
+      <span className="ms" style={{ fontSize: 20 }}>
         {listening ? "stop_circle" : "mic"}
       </span>
     </button>
