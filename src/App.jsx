@@ -9,6 +9,52 @@ function buildSystemPrompt() {
     : "";
   return `You are KRAFT AI, a powerful AI created exclusively by Kraft Kartel, a music producer and creative entrepreneur based in Kigali, Rwanda.
 
+IMAGE GENERATION & EDITING:
+You can generate and edit images using the Pollinations API. When any image-related request is made, you MUST respond with a markdown image using this exact format:
+
+![description](https://image.pollinations.ai/prompt/{encoded_prompt}?width={w}&height={h}&seed={seed}&nologo=true&enhance=true)
+
+RULES:
+- ALWAYS encode the prompt: spaces become %20, commas become %2C, quotes become %22, parentheses become %28 and %29
+- ALWAYS pick the best width/height for the request: portrait=768x1024, landscape=1024x768, square=1024x1024, banner=1280x640, phone wallpaper=1080x1920
+- ALWAYS use a random seed number between 1000 and 99999 for variety
+- ALWAYS add enhance=true for maximum quality
+- NEVER explain what you're doing — just generate the image immediately then add a short caption below it
+- Generate multiple images (2-4) when asked for variations or options
+- When editing an image concept (change background, change style, change colors, add elements), rebuild the full prompt with the changes applied — do not reference the previous image
+- When asked for a logo: use clean vector style, minimal, professional, transparent-friendly prompt
+- When asked for a photo: use photorealistic, 8k, shot on Sony A7, natural lighting style modifiers
+- When asked for art: use the specific art style requested — oil painting, watercolor, anime, comic, 3D render, etc.
+- When asked for a wallpaper: always use 1080x1920 or 1920x1080 and cinematic quality modifiers
+
+PROMPT ENGINEERING (apply automatically based on request type):
+
+For PHOTOS add: "photorealistic, 8k uhd, shot on Sony A7R IV, natural lighting, highly detailed, sharp focus, professional photography"
+
+For ART add the style then: "highly detailed, vibrant colors, masterpiece, trending on artstation"
+
+For LOGOS add: "minimal flat vector logo, clean design, professional, scalable, transparent background, bold typography"
+
+For PORTRAITS add: "professional portrait, studio lighting, sharp eyes, skin texture detail, bokeh background"
+
+For WALLPAPERS add: "cinematic, ultra wide, atmospheric, moody lighting, ultra detailed, 4k"
+
+For ALBUM COVERS add: "album cover art, bold typography space, music industry quality, striking visual, square format"
+
+For PRODUCTS add: "product photography, studio white background, professional lighting, commercial quality, ultra sharp"
+
+EDITING COMMANDS — when user says things like:
+- "make it darker" → add "dark moody atmosphere, low key lighting, shadows"
+- "make it more realistic" → add "photorealistic, hyperrealistic, 8k, sharp"  
+- "change background to X" → replace background description in prompt
+- "make it anime" → add "anime style, Studio Ghibli, cel shading, vibrant"
+- "make it black and white" → add "black and white photography, monochrome, high contrast"
+- "make it cinematic" → add "cinematic lighting, anamorphic lens, movie still, color graded"
+- "add X to the image" → rebuild prompt including X naturally
+- "make it look like Y" → adopt Y's visual style in the prompt
+
+ALWAYS show the image first, then offer: "Want variations, a different style, or any edits?"
+
 IDENTITY:
 - You are NOT ChatGPT, Claude, Gemini, Grok, or any other AI
 - If asked who made you: "I was created by Kraft Kartel"
@@ -260,6 +306,35 @@ function renderMarkdown(text) {
   let i = 0;
   while (i < lines.length) {
     const line = lines[i];
+
+    // Image
+    const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)/);
+    if (imgMatch) {
+      const [, alt, src] = imgMatch;
+      elements.push(
+        <div key={i} style={{ margin: "12px 0" }}>
+          <img
+            src={src} alt={alt}
+            style={{ maxWidth: "100%", borderRadius: 12, border: "1px solid rgba(108,71,255,0.2)", display: "block" }}
+            onLoad={e => e.target.style.opacity = 1}
+            onError={e => { e.target.style.display = "none"; }}
+          />
+          {alt && <div style={{ fontSize: 11, color: "#64748b", marginTop: 6, fontStyle: "italic" }}>{alt}</div>}
+          <button onClick={() => {
+            const a = document.createElement("a");
+            a.href = src; a.download = alt || "kraft-image"; a.target = "_blank";
+            a.click();
+          }} style={{
+            marginTop: 8, padding: "5px 14px", borderRadius: 8, fontSize: 11, cursor: "pointer",
+            background: "rgba(108,71,255,0.1)", border: "1px solid rgba(108,71,255,0.25)",
+            color: "#a78bfa", fontFamily: "inherit", fontWeight: 600
+          }}>⬇ Download</button>
+        </div>
+      );
+      i++;
+      continue;
+    }
+
     // Code block
     if (line.startsWith("```")) {
       const lang = line.slice(3).trim();
@@ -735,6 +810,7 @@ export default function App() {
   useEffect(() => {
     const savedFont = localStorage.getItem("kraft_font");
     if (savedFont) document.body.style.fontFamily = savedFont;
+    else document.body.style.fontFamily = "'Inter', sans-serif";
     // Pre-load voices so they're ready when needed
     if (window.speechSynthesis) {
       window.speechSynthesis.getVoices();
@@ -752,6 +828,10 @@ export default function App() {
     "Best investment strategy in 2025?",
     "How do I grow a brand in Africa?",
     "Translate 'hello friend' to Kinyarwanda",
+    "Generate a Kigali city wallpaper at night",
+    "Design a logo for Kraft Kartel",
+    "Create album cover art for a trap project",
+    "Generate a portrait of a futuristic African king",
   ];
 
   useEffect(() => { localStorage.setItem("kraft_chats", JSON.stringify(chats)); }, [chats]);
@@ -1290,22 +1370,88 @@ textarea::placeholder { color: #888; }
             {/* Font Family */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>FONT</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {[
-                  ["-apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif", "SF Pro (Apple)"],
-                  ["'New York', Georgia, serif", "New York (Apple Serif)"],
-                  ["'SF Mono', 'Fira Code', monospace", "SF Mono"],
-                  ["'Helvetica Neue', Helvetica, sans-serif", "Helvetica Neue"],
-                  ["Georgia, 'Times New Roman', serif", "Georgia"],
-                ].map(([val, label]) => (
-                  <button key={val} onClick={() => { localStorage.setItem("kraft_font", val); document.documentElement.style.setProperty("--kraft-font", val); }} style={{
-                    padding: "8px 12px", borderRadius: 9, cursor: "pointer", textAlign: "left",
-                    background: (localStorage.getItem("kraft_font") || "").includes(val.split(",")[0].replace(/'/g,"").trim()) ? (isDark ? "rgba(108,71,255,0.15)" : "rgba(58,31,168,0.1)") : isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
-                    border: (localStorage.getItem("kraft_font") || "").includes(val.split(",")[0].replace(/'/g,"").trim()) ? `1px solid ${isDark ? "rgba(108,71,255,0.35)" : "rgba(58,31,168,0.3)"}` : isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.09)",
-                    color: isDark ? "#e2e8f0" : "#1a1714", fontSize: 12, fontFamily: val, fontWeight: 500
-                  }}>{label}</button>
-                ))}
-              </div>
+              <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600&family=Lato:wght@400;700&family=Poppins:wght@400;500;600&family=Montserrat:wght@400;500;600;700&family=Raleway:wght@400;500;600&family=Nunito:wght@400;600;700&family=Source+Sans+3:wght@400;600&family=Ubuntu:wght@400;500&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;600&family=Lora:wght@400;600&family=PT+Serif:wght@400;700&family=Crimson+Text:wght@400;600&family=Fira+Code:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=Inconsolata:wght@400;500&family=Oswald:wght@400;500;600&family=Bebas+Neue&family=Exo+2:wght@400;500;600&family=Orbitron:wght@400;500;700&family=Rajdhani:wght@400;500;600&family=Oxanium:wght@400;500;600&family=Syne:wght@400;500;700&family=Space+Grotesk:wght@400;500;600&family=DM+Sans:wght@400;500&family=Outfit:wght@400;500;600&display=swap');
+              `}</style>
+
+              {[
+                {
+                  group: "SANS SERIF",
+                  fonts: [
+                    { name: "Inter", stack: "'Inter', sans-serif", preview: "Sharp & modern" },
+                    { name: "Roboto", stack: "'Roboto', sans-serif", preview: "Clean & neutral" },
+                    { name: "Open Sans", stack: "'Open Sans', sans-serif", preview: "Friendly & legible" },
+                    { name: "Lato", stack: "'Lato', sans-serif", preview: "Humanist & warm" },
+                    { name: "Poppins", stack: "'Poppins', sans-serif", preview: "Geometric & bold" },
+                    { name: "Montserrat", stack: "'Montserrat', sans-serif", preview: "Elegant & strong" },
+                    { name: "Raleway", stack: "'Raleway', sans-serif", preview: "Thin & stylish" },
+                    { name: "Nunito", stack: "'Nunito', sans-serif", preview: "Rounded & soft" },
+                    { name: "Source Sans 3", stack: "'Source Sans 3', sans-serif", preview: "Adobe's workhorse" },
+                    { name: "Ubuntu", stack: "'Ubuntu', sans-serif", preview: "Tech & friendly" },
+                    { name: "DM Sans", stack: "'DM Sans', sans-serif", preview: "Minimal & crisp" },
+                    { name: "Outfit", stack: "'Outfit', sans-serif", preview: "Fresh & geometric" },
+                    { name: "Space Grotesk", stack: "'Space Grotesk', sans-serif", preview: "Techy & unique" },
+                  ]
+                },
+                {
+                  group: "SERIF",
+                  fonts: [
+                    { name: "Merriweather", stack: "'Merriweather', serif", preview: "Classic & readable" },
+                    { name: "Playfair Display", stack: "'Playfair Display', serif", preview: "Luxury & editorial" },
+                    { name: "Lora", stack: "'Lora', serif", preview: "Literary & warm" },
+                    { name: "PT Serif", stack: "'PT Serif', serif", preview: "Newspaper style" },
+                    { name: "Crimson Text", stack: "'Crimson Text', serif", preview: "Old world elegance" },
+                  ]
+                },
+                {
+                  group: "MONOSPACE",
+                  fonts: [
+                    { name: "Fira Code", stack: "'Fira Code', monospace", preview: "Dev favorite" },
+                    { name: "JetBrains Mono", stack: "'JetBrains Mono', monospace", preview: "IDE standard" },
+                    { name: "Space Mono", stack: "'Space Mono', monospace", preview: "Retro terminal" },
+                    { name: "IBM Plex Mono", stack: "'IBM Plex Mono', monospace", preview: "Corporate hacker" },
+                    { name: "Inconsolata", stack: "'Inconsolata', monospace", preview: "Slim & readable" },
+                  ]
+                },
+                {
+                  group: "DISPLAY",
+                  fonts: [
+                    { name: "Oswald", stack: "'Oswald', sans-serif", preview: "Bold headlines" },
+                    { name: "Bebas Neue", stack: "'Bebas Neue', sans-serif", preview: "ALL CAPS IMPACT" },
+                    { name: "Exo 2", stack: "'Exo 2', sans-serif", preview: "Sci-fi & tech" },
+                    { name: "Orbitron", stack: "'Orbitron', sans-serif", preview: "Future vibes" },
+                    { name: "Rajdhani", stack: "'Rajdhani', sans-serif", preview: "South Asian modern" },
+                    { name: "Oxanium", stack: "'Oxanium', sans-serif", preview: "Game UI feel" },
+                    { name: "Syne", stack: "'Syne', sans-serif", preview: "Avant-garde" },
+                  ]
+                },
+              ].map(({ group, fonts }) => (
+                <div key={group} style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 10, color: isDark ? "#4b5563" : "#9ca3af", letterSpacing: 2.5, fontWeight: 700, marginBottom: 8 }}>{group}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {fonts.map(({ name, stack, preview }) => {
+                      const current = localStorage.getItem("kraft_font") || "";
+                      const active = current.includes(name);
+                      return (
+                        <button key={name} onClick={() => {
+                          localStorage.setItem("kraft_font", stack);
+                          document.body.style.fontFamily = stack;
+                        }} style={{
+                          padding: "10px 14px", borderRadius: 10, cursor: "pointer",
+                          textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center",
+                          background: active ? (isDark ? `${accent}18` : `${accent}12`) : isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
+                          border: active ? `1px solid ${accent}50` : isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.07)",
+                          transition: "all 0.15s"
+                        }}>
+                          <span style={{ fontFamily: stack, fontSize: 14, color: isDark ? "#e2e8f0" : "#1a1714", fontWeight: 500 }}>{name}</span>
+                          <span style={{ fontFamily: stack, fontSize: 11, color: isDark ? "#4b5563" : "#9ca3af" }}>{preview}</span>
+                          {active && <span style={{ fontSize: 10, color: accent, marginLeft: 8, fontWeight: 700 }}>✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             </div>{/* end Voice section */}
