@@ -450,52 +450,82 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
 function speakText(text, voiceSettings = {}) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  const voices = window.speechSynthesis.getVoices();
-  const gender = voiceSettings.gender || "female";
-  const preferred = voices.filter(v =>
-    gender === "female"
-      ? /female|zira|samantha|victoria|karen|moira|fiona|tessa/i.test(v.name)
-      : /male|david|mark|daniel|alex|jorge|diego/i.test(v.name)
-  );
-  if (preferred.length) utt.voice = preferred[0];
-  const tone = voiceSettings.tone || "natural";
+
+  const clean = text
+    .replace(/```[\s\S]*?```/g, "code block.")
+    .replace(/`[^`]+`/g, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/#{1,3} /g, "")
+    .replace(/\n{2,}/g, ". ")
+    .replace(/\n/g, " ")
+    .trim();
+
+  if (!clean) return;
+
   const tonePresets = {
-    natural:    { rate: voiceSettings.rate || 1,    pitch: voiceSettings.pitch || 1 },
-    calm:       { rate: (voiceSettings.rate || 1) * 0.85, pitch: (voiceSettings.pitch || 1) * 0.9 },
-    energetic:  { rate: (voiceSettings.rate || 1) * 1.2,  pitch: (voiceSettings.pitch || 1) * 1.15 },
-    deep:       { rate: (voiceSettings.rate || 1) * 0.9,  pitch: (voiceSettings.pitch || 1) * 0.7 },
-    whisper:    { rate: (voiceSettings.rate || 1) * 0.8,  pitch: (voiceSettings.pitch || 1) * 1.3 },
-    assistant:  { rate: (voiceSettings.rate || 1) * 1.05, pitch: (voiceSettings.pitch || 1) * 1.05 },
+    natural:   { rate: 1,    pitch: 1 },
+    calm:      { rate: 0.88, pitch: 0.9 },
+    energetic: { rate: 1.2,  pitch: 1.15 },
+    deep:      { rate: 0.9,  pitch: 0.65 },
+    whisper:   { rate: 0.82, pitch: 1.3 },
+    assistant: { rate: 1.05, pitch: 1.05 },
   };
-  const preset = tonePresets[tone] || tonePresets.natural;
-  utt.rate = preset.rate;
-  utt.pitch = preset.pitch;
-  utt.volume = 1;
-  window.speechSynthesis.speak(utt);
+
+  const preset = tonePresets[voiceSettings.tone || "natural"];
+  const gender = voiceSettings.gender || "female";
+
+  const doSpeak = (voices) => {
+    const utt = new SpeechSynthesisUtterance(clean);
+    const preferred = voices.filter(v =>
+      gender === "female"
+        ? /female|zira|samantha|victoria|karen|moira|fiona|tessa|google uk english female|microsoft zira/i.test(v.name)
+        : /male|david|mark|daniel|alex|jorge|google uk english male|microsoft david/i.test(v.name)
+    );
+    if (preferred.length) utt.voice = preferred[0];
+    else if (voices.length) utt.voice = voices[0];
+    utt.rate = (voiceSettings.rate || 1) * preset.rate;
+    utt.pitch = (voiceSettings.pitch || 1) * preset.pitch;
+    utt.volume = 1;
+    utt.lang = "en-US";
+    window.speechSynthesis.speak(utt);
+  };
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length) {
+    doSpeak(voices);
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v.length) doSpeak(v);
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }
 }
 
 function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode }) {
   const [listening, setListening] = useState(false);
   const recRef = useRef(null);
 
+  const onTranscriptRef = useRef(onTranscript);
+  const onAutoSendRef = useRef(onAutoSend);
+  useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
+  useEffect(() => { onAutoSendRef.current = onAutoSend; }, [onAutoSend]);
+
   const toggle = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Speech recognition not supported in this browser."); return; }
     if (listening) { recRef.current?.stop(); setListening(false); return; }
-    if (window.speechSynthesis.speaking) window.speechSynthesis.pause();
+    if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
     const rec = new SR();
     recRef.current = rec;
     rec.lang = "en-US";
     rec.interimResults = true;
-    rec.continuous = true;
-    let silenceTimer = null;
+    rec.continuous = false;
     let finalTranscript = "";
+    let silenceTimer = null;
 
     rec.onresult = e => {
       if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
-      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
@@ -504,30 +534,36 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
           interim = e.results[i][0].transcript;
         }
       }
-
-      onTranscript(finalTranscript + interim);
-
+      onTranscriptRef.current(finalTranscript + interim);
       clearTimeout(silenceTimer);
       silenceTimer = setTimeout(() => {
         const text = finalTranscript.trim();
         if (text) {
           rec.stop();
-          onAutoSend(text);
+          setListening(false);
+          onTranscriptRef.current("");
+          onAutoSendRef.current(text);
           finalTranscript = "";
         }
-      }, 1000);
+      }, 900);
     };
 
     rec.onend = () => {
       setListening(false);
       clearTimeout(silenceTimer);
-      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+      const text = finalTranscript.trim();
+      if (text) {
+        onTranscriptRef.current("");
+        onAutoSendRef.current(text);
+      }
     };
-    rec.onerror = () => {
+
+    rec.onerror = (err) => {
+      console.error("Speech error:", err);
       setListening(false);
       clearTimeout(silenceTimer);
-      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     };
+
     rec.start();
     setListening(true);
   };
@@ -701,8 +737,8 @@ export default function App() {
   }, []);
 
   async function sendMessage(overrideText) {
-    const text = (overrideText || input).trim();
-    if (!text || loading) return;
+    const text = (overrideText !== undefined ? overrideText : input).trim();
+    if ((!text && !attachedImage) || loading) return;
     setInput("");
 
     const currentChat = activeChatRef.current || chats.find(c => c.id === activeChatId);
@@ -716,10 +752,11 @@ export default function App() {
     ));
     setLoading(true);
 
+    const isLightModel = (attachedImage ? "llama-3.2-11b-vision-preview" : model) === "llama-3.1-8b-instant";
     const history = updatedMessages
       .filter((m, idx) => !(m.role === "assistant" && idx === 0))
-      .map(m => ({ role: m.role, content: m.content }))
-      .slice(-6);
+      .map(m => ({ role: m.role, content: typeof m.content === "string" ? m.content.slice(0, isLightModel ? 800 : 4000) : m.content }))
+      .slice(isLightModel ? -2 : -6);
 
     try {
       const lastUserMsg = attachedImage
@@ -762,16 +799,7 @@ export default function App() {
         window.addEventListener("focus", restore);
       }
       if (voiceMode) {
-        const clean = aiContent.replace(/\*\*|`|#{1,3} /g, "").replace(/\n+/g, " ").trim();
-        const doSpeak = () => {
-          const voices = window.speechSynthesis.getVoices();
-          if (voices.length === 0) {
-            window.speechSynthesis.onvoiceschanged = () => { speakText(clean, voiceSettings); };
-          } else {
-            speakText(clean, voiceSettings);
-          }
-        };
-        setTimeout(doSpeak, 100);
+        speakText(aiContent, voiceSettings);
       }
       // // extractAndSaveMemory(text, aiContent);
     } catch (e) {
@@ -974,7 +1002,7 @@ textarea::placeholder { color: #888; }
               transition: "all 0.2s"
             }}>
               <span className="ms" style={{fontSize:16}}>{model === "llama-3.3-70b-versatile" ? "bolt" : "eco"}</span>
-              {model === "llama-3.3-70b-versatile" ? "POWER" : "FAST"}
+              {model === "llama-3.3-70b-versatile" ? "POWER" : "FAST ⚡"}
             </button>
             <button onClick={() => setTheme(t => t === "dark" ? "light" : "dark")} title="Toggle theme" style={{
               width: 34, height: 34, borderRadius: 8, cursor: "pointer",
@@ -1323,13 +1351,7 @@ textarea::placeholder { color: #888; }
                   maxHeight: 160, overflowY: "auto"
                 }}
               />
-              <button onClick={() => setShowStarters(v => !v)} title="Quick starters" style={{
-                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                background: showStarters ? `${accent}22` : "rgba(108,71,255,0.08)",
-                border: showStarters ? `1px solid ${accent}50` : "1px solid rgba(108,71,255,0.2)",
-                color: showStarters ? accent : "#4b3a8a",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16
-              }}>✦</button>
+            
               <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
                 width: 40, height: 40, borderRadius: 12, flexShrink: 0,
                 background: attachedImage ? "rgba(16,185,129,0.15)" : "rgba(108,71,255,0.08)",
@@ -1339,7 +1361,8 @@ textarea::placeholder { color: #888; }
               }}>📎</button>
               <button
                 onClick={sendMessage}
-                disabled={loading || (!input.trim() && !attachedImage)}
+                disabled={loading || (!input.trim() && !attachedImage) || undefined}
+                onClick={() => sendMessage(input)}
                 style={{
                   width: 40, height: 40, borderRadius: 12, flexShrink: 0,
                   background: loading || !input.trim()
