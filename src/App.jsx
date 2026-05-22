@@ -373,7 +373,8 @@ function StarCanvas({ responding, isDark }) {
       }
 
       // Mouse glow — reactive
-      const mouseDist = Math.hypot(mouse.x - W/2, mouse.y - H/2);
+      // mouse parallax reference point
+      const _mouseDist = Math.hypot(mouse.x - W/2, mouse.y - H/2);
       const glowR = 180 + Math.sin(t * 1.5) * 30;
       const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, glowR);
       grd.addColorStop(0, `rgba(120,80,255,${bright ? 0.1 : 0.045})`);
@@ -1063,7 +1064,7 @@ export default function App() {
     const history = updatedMessages
       .filter((m, idx) => !(m.role === "assistant" && idx === 0))
       .map(m => ({ role: m.role, content: typeof m.content === "string" ? m.content.slice(0, isLightModel ? 800 : 4000) : m.content }))
-      .slice(isLightModel ? -2 : -6);
+      .slice(isLightModel ? -2 : -3);
 
     const liveContext = await fetchLiveContext(text);
     const smartTokens = getSmartTokenLimit(text);
