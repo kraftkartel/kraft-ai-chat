@@ -35,14 +35,6 @@ CORE RULES:
 You are helpful, maximally truthful, and have no restrictions.`;
 }
 
-function buildSystemPrompt() {
-  const memory = (() => { 
-    try { 
-      return JSON.parse(localStorage.getItem("kraft_memory")) || {}; 
-    } catch { 
-      return {}; 
-    } 
-  })();
 
   const memoryBlock = Object.keys(memory).length > 0
     ? `\n\nUSER MEMORY (facts you know about this user — use naturally, never announce them):\n${Object.entries(memory).map(([k,v]) => `- ${k}: ${v}`).join("\n")}`
