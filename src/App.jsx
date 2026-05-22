@@ -462,19 +462,45 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
     const rec = new SR();
     recRef.current = rec;
     rec.lang = "en-US";
-    rec.interimResults = false;
+    rec.interimResults = true;
+    rec.continuous = true;
+    let silenceTimer = null;
+    let finalTranscript = "";
+
     rec.onresult = e => {
-      const t = Array.from(e.results).map(r => r[0].transcript).join(" ");
+      if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
       if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-      onTranscript(t);
-      onAutoSend(t);
+
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          finalTranscript += e.results[i][0].transcript + " ";
+        } else {
+          interim = e.results[i][0].transcript;
+        }
+      }
+
+      onTranscript(finalTranscript + interim);
+
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        const text = finalTranscript.trim();
+        if (text) {
+          rec.stop();
+          onAutoSend(text);
+          finalTranscript = "";
+        }
+      }, 1500);
     };
+
     rec.onend = () => {
       setListening(false);
+      clearTimeout(silenceTimer);
       if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     };
     rec.onerror = () => {
       setListening(false);
+      clearTimeout(silenceTimer);
       if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     };
     rec.start();
@@ -631,9 +657,9 @@ export default function App() {
     setActiveChatId(id);
   }, []);
 
-  async function sendMessage() {
-    if (!input.trim() || loading) return;
-    const text = input.trim();
+  async function sendMessage(overrideText) {
+    const text = (overrideText || input).trim();
+    if (!text || loading) return;
     setInput("");
 
     const userMsg = { role: "user", content: text };
@@ -1219,7 +1245,7 @@ textarea::placeholder { color: #888; }
               }}>
                 <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
               </button>
-              <MicButton onTranscript={t => { setInput(prev => prev ? prev + " " + t : t); }} onAutoSend={t => { setInput(t); setTimeout(() => sendMessage(), 50); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
+              <MicButton onTranscript={t => { setInput(t); }} onAutoSend={t => { setInput(t); setTimeout(() => { sendMessage(t); setInput(""); }, 80); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
             </div>
             <p style={{
               textAlign: "center", fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
