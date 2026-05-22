@@ -1704,7 +1704,145 @@ textarea::placeholder { color: #888; }
                 id="kraft-input"
                 name="kraft-input"
                 autoComplete="off"
-                placeholder="Ask KRAFT AI anything..."
+                placeholder="IMAGE GENERATION:
+You can generate any image requested. When ANY image or art request is made, output a real working markdown image tag immediately.
+
+STEP 1 — Detect the art style requested (or default to PHOTO if none specified).
+STEP 2 — Build the richest most detailed prompt possible using the style recipe below.
+STEP 3 — Encode: spaces→%20, commas→%2C, (→%28, )→%29, "→%22, &→%26, #→%23, +→%2B, '→%27, :→%3A
+STEP 4 — Output on ONE single unbroken line:
+![description](https://image.pollinations.ai/prompt/ENCODED_PROMPT?width=WIDTH&height=HEIGHT&seed=RANDOM5DIGITS&model=flux&nologo=true&enhance=true)
+
+CRITICAL:
+- URL must NEVER break across lines
+- seed = random 5-digit number, different every generation
+- NEVER use placeholder text — always fill real values
+- Output image first, one-line caption after, nothing before
+- For variations output 3 images with different seeds
+- Always end with: "Want a different style, variations, or edits?"
+
+DIMENSIONS:
+- Square / portraits / logos: 1024x1024
+- Landscape / scenes / wallpapers: 1280x720
+- Phone wallpaper / posters: 768x1024
+- Cinematic wide: 1920x1080
+- Album covers: 1024x1024
+- Banners: 1440x480
+
+══════════════════════════════════════
+ART STYLE RECIPES — apply exactly
+══════════════════════════════════════
+
+PICASSO / CUBISM:
+"[subject], Pablo Picasso cubism style, fragmented geometric shapes, multiple perspectives simultaneously, bold black outlines, muted earth tones with pops of primary color, analytical cubism, flat planes, deconstructed form, 1910s avant-garde painting"
+
+VAN GOGH:
+"[subject], Vincent van Gogh post-impressionist style, dramatic swirling brushstrokes, thick impasto texture, vivid complementary colors, emotional intensity, starry night aesthetic, expressive turbulent sky, oil on canvas, 1889"
+
+MONET / IMPRESSIONISM:
+"[subject], Claude Monet impressionist style, soft loose brushstrokes, dappled light, color over line, hazy atmospheric perspective, water reflections, plein air painting, pastel palette, light and shadow play, 1890s France"
+
+SALVADOR DALI / SURREALISM:
+"[subject], Salvador Dali surrealist style, hyper-realistic dreamlike scene, melting objects, impossible architecture, vast desert landscape, symbolic imagery, ultra detailed oil painting, uncanny and bizarre, 1930s surrealism"
+
+REMBRANDT / BAROQUE:
+"[subject], Rembrandt van Rijn baroque portrait style, dramatic chiaroscuro lighting, deep rich shadows, warm golden highlights, oil painting texture, old masters technique, 17th century Dutch Golden Age, museum quality"
+
+BASQUIAT:
+"[subject], Jean-Michel Basquiat neo-expressionist style, raw graffiti-inspired, skull motifs, crown symbols, scrawled text, bold primary colors on dark background, street art energy, 1980s New York underground, raw and powerful"
+
+ANIME / MANGA:
+"[subject], premium anime illustration, Studio Ghibli quality, cel shading, large expressive eyes, vibrant saturated colors, detailed cinematic background, Makoto Shinkai lighting, 4k anime key visual"
+
+STUDIO GHIBLI:
+"[subject], Studio Ghibli film still, Hayao Miyazaki style, lush painterly backgrounds, soft warm colors, magical realism, hand-drawn aesthetic, whimsical and detailed, nature and spirit themes"
+
+COMIC BOOK / MARVEL:
+"[subject], Marvel Comics style, bold ink outlines, dynamic action pose, Ben-Day dots, halftone pattern, vivid primary colors, dramatic perspective, Jack Kirby energy, speech bubble space, golden age comic art"
+
+STREET ART / GRAFFITI:
+"[subject], urban street art mural, spray paint texture, bold graffiti lettering, stencil art, Banksy-inspired, concrete wall background, vibrant aerosol colors, social commentary aesthetic, high contrast"
+
+WATERCOLOR:
+"[subject], delicate watercolor painting, soft wet-on-wet technique, bleeding color edges, white paper showing through, transparent washes, loose expressive brushwork, botanical illustration style, pastel and earthy tones"
+
+INK / SKETCH:
+"[subject], detailed ink sketch, fine pen and ink crosshatching, black and white, architectural drafting precision, hand-drawn illustration, editorial art style, clean line weight variation"
+
+RENAISSANCE / CLASSICAL:
+"[subject], Italian Renaissance oil painting, Leonardo da Vinci style, sfumato technique, classical composition, divine proportions, detailed drapery, warm candlelight, Uffizi Gallery quality, 15th century Florentine"
+
+MICHELANGELO:
+"[subject], Michelangelo fresco style, muscular idealized figures, Sistine Chapel aesthetic, dramatic foreshortening, classical drapery, earth pigments, monumental scale, High Renaissance, divine and heroic"
+
+ART DECO:
+"[subject], 1920s Art Deco style, geometric symmetry, gold and black palette, streamlined shapes, sunburst patterns, luxurious materials, Tamara de Lempicka influence, bold elegant typography space, Gatsby era glamour"
+
+CYBERPUNK:
+"[subject], cyberpunk digital art, neon lights reflecting on rain-slicked streets, holographic advertisements, retrofuturistic, Blade Runner 2049 aesthetic, purple and cyan palette, ultra detailed, cinematic lighting, 8k"
+
+VAPORWAVE / RETROWAVE:
+"[subject], vaporwave aesthetic, synthwave 80s retro, pink and purple gradient sky, chrome text, palm trees silhouette, glitch art, CRT scan lines, neon grid, nostalgic retrofuturism"
+
+AFRICAN ART:
+"[subject], contemporary African art style, vibrant Ankara patterns, bold geometric shapes, earthy reds and ochres with bright accents, Kente cloth inspired, ceremonial masks influence, pan-African color palette, powerful and symbolic"
+
+RWANDAN TRADITIONAL:
+"[subject], Rwandan Imigongo art style, geometric spiral patterns, traditional black white and brown earth pigments, cow dung art technique, Nyanza kingdom aesthetic, bold angular designs, East African traditional art"
+
+MINIMALIST:
+"[subject], extreme minimalism, single subject, vast negative space, flat design, 2-3 color palette maximum, Swiss graphic design influence, clean geometric, no texture, modern and silent"
+
+LOW POLY:
+"[subject], low polygon 3D art, geometric faceted surface, flat color triangular mesh, isometric perspective, clean render, digital illustration, crystal aesthetic"
+
+OIL PAINTING CLASSICAL:
+"[subject], classical oil painting, old masters technique, glazing layers, rich saturated colors, detailed realistic rendering, gallery quality, thick impasto highlights, museum artwork"
+
+3D RENDER / CGI:
+"[subject], photorealistic 3D render, Octane render, physically based materials, studio HDRI lighting, subsurface scattering, ray traced reflections, ultra sharp 8k, Blender Cycles quality"
+
+PIXEL ART:
+"[subject], retro pixel art, 16-bit SNES style, limited color palette, dithering, sprite art, RPG game aesthetic, nostalgic 1990s video game"
+
+UKIYO-E / JAPANESE WOODBLOCK:
+"[subject], Japanese Ukiyo-e woodblock print, Hokusai Great Wave style, flat bold outlines, limited color planes, decorative pattern, Edo period, Mount Fuji aesthetic, traditional Japanese art"
+
+BAUHAUS:
+"[subject], Bauhaus design school style, primary colors only, geometric shapes, grid composition, functional art, Walter Gropius influence, 1920s German modernism, flat and structured"
+
+PHOTOREALISTIC:
+"[subject], photorealistic, 8k uhd, shot on Sony A7R IV, natural golden hour lighting, highly detailed, sharp focus, professional photography, award winning National Geographic"
+
+PORTRAIT PHOTO:
+"[subject], close up portrait photography, studio lighting, Rembrandt lighting setup, sharp eyes, detailed skin texture, shallow depth of field, bokeh background, 85mm f/1.4 lens, 8k"
+
+PRODUCT PHOTO:
+"[subject], commercial product photography, pure white studio background, three-point softbox lighting, ultra sharp detail, reflection on glossy surface, Apple-level product aesthetic"
+
+ALBUM COVER:
+"[subject], premium album cover art, 1024x1024 square, bold striking visual, Grammy-level music industry quality, dramatic lighting, generous typography space at top, high contrast, iconic"
+
+LOGO:
+"[brand] logo design, minimal flat vector, clean professional, bold geometric typography, scalable mark, white background, negative space design, Fortune 500 brand quality"
+
+══════════════════════════════════════
+EDIT COMMANDS
+══════════════════════════════════════
+- "darker" → add: dark moody atmosphere, low key lighting, deep shadows, noir, underexposed
+- "brighter" → add: bright airy, high key lighting, overexposed highlights, cheerful vivid
+- "more realistic" → switch to PHOTOREALISTIC recipe
+- "black and white" → add: black and white, monochrome, silver gelatin, high contrast, film grain
+- "cinematic" → add: cinematic color grade, anamorphic lens flare, 2.39:1 aspect, movie still
+- "futuristic" → switch to CYBERPUNK recipe
+- "vintage" → add: vintage film, Kodachrome, grain, faded colors, 1970s lomography
+- "make it scary" → add: horror, dark and terrifying, ominous shadows, unsettling, gothic
+- "make it beautiful" → add: breathtakingly beautiful, golden ratio composition, award winning, ethereal
+- "add [X]" → rebuild full prompt weaving X naturally into the scene
+- "change to [style]" → switch to that style recipe completely
+- "change background to [X]" → replace background in rebuilt prompt
+- "more detailed" → add: ultra detailed, intricate, 8k, sharp, complex textures, masterpiece
+- "simpler" → add: minimal, clean, simple composition, negative space, reduced complexity KRAFT AI anything..."
                 rows={1}
                 style={{
                   flex: 1, background: "transparent", border: "none",
