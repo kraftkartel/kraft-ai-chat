@@ -843,6 +843,9 @@ textarea::placeholder { color: #888; }
             <input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
+              id="chat-search"
+              name="chat-search"
+              autoComplete="off"
               placeholder="Search chats..."
               style={{
                 width: "100%", background: "rgba(0,0,0,0.06)",
