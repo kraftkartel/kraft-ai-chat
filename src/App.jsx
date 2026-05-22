@@ -1145,7 +1145,7 @@ export default function App() {
     fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
     color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
   }}>
-      <StarCanvas responding={loading} isDark={isDark} />
+      <div data-theme={isDark ? "dark" : "light"} style={{display: "none"}}></div>
 
       <style>{`
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -1162,38 +1162,52 @@ export default function App() {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 
-  /* ==================== DARK MODE BUTTON FIX ==================== */
+  /* ==================== DARK MODE BUTTONS ==================== */
   button {
     color: #e2e8f0 !important;
   }
 
-  /* Fix low visibility buttons in dark mode */
-  button[style*="color: #4b3a8a"],
-  button[style*="color: #a78bfa"],
-  button[style*="color: #4b5563"] {
-    color: #c4b5fd !important;
-  }
-
-  /* Topbar buttons */
-  div[style*="background: rgba(11,11,14"] button {
-    color: #c4b5fd !important;
-  }
-
-  /* Input area buttons */
-  button[style*="background: rgba(108,71,255,0.08)"],
-  button[style*="background: rgba(20,20,26,0.95)"] button {
-    color: #c4b5fd !important;
-  }
-
-  /* Mic & Voice buttons */
-  button[style*="color: #4b3a8a"] {
-    color: #a78bfa !important;
-  }
-
-  /* Light mode remains clean */
+  /* LIGHT MODE BUTTONS */
   div[style*="background: #f8f6f1"] button,
-  div[style*="background: rgba(248,246,241"] button {
+  div[style*="background: rgba(248,246,241"] button,
+  div[style*="background: rgba(244,242,235"] button {
     color: #1f1c17 !important;
+  }
+
+  /* ==================== SCROLLBAR (Thin & Adaptive) ==================== */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(108,71,255,0.35);
+    border-radius: 20px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(108,71,255,0.6);
+  }
+
+  /* Dark mode scrollbar */
+  [data-theme="dark"] ::-webkit-scrollbar-thumb,
+  body.dark ::-webkit-scrollbar-thumb {
+    background: rgba(108,71,255,0.45);
+  }
+  [data-theme="dark"] ::-webkit-scrollbar-thumb:hover,
+  body.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(108,71,255,0.75);
+  }
+
+  /* Light mode scrollbar */
+  [data-theme="light"] ::-webkit-scrollbar-thumb,
+  body.light ::-webkit-scrollbar-thumb {
+    background: rgba(108,71,255,0.5);
+  }
+  [data-theme="light"] ::-webkit-scrollbar-thumb:hover,
+  body.light ::-webkit-scrollbar-thumb:hover {
+    background: rgba(108,71,255,0.8);
   }
 `}</style>
       {/* Mobile overlay backdrop */}
@@ -1206,8 +1220,9 @@ export default function App() {
 
       {/* Sidebar */}
       <div style={{
-        width: sidebarOpen ? 260 : 0,
-        minWidth: sidebarOpen ? 260 : 0,
+        <div style={{
+  width: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
+  minWidth: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
         overflow: "hidden",
         transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
         background: isDark ? "rgba(11,11,14,0.98)" : "rgba(244,242,235,0.98)",
@@ -1705,7 +1720,7 @@ export default function App() {
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
               display: "flex", alignItems: "flex-end", gap: 12,
-              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(248,246,241,0.98)",
+              background: isDark ? "rgba(20,20,26,0.98)" : "rgba(248,246,241,0.98)",
               border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
@@ -1796,15 +1811,17 @@ export default function App() {
               >
                 {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
               </button>
-              <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) window.speechSynthesis.cancel(); }} title={voiceMode ? "Voice mode ON — click to disable" : "Enable voice mode (AI speaks back)"} style={{
-                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                background: voiceMode ? `${accent}30` : "rgba(108,71,255,0.08)",
-                border: voiceMode ? `1px solid ${accent}80` : "1px solid rgba(108,71,255,0.2)",
-                color: voiceMode ? accent : "#4b3a8a",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all 0.2s",
-                boxShadow: voiceMode ? `0 0 14px ${accent}50` : "none"
-              }}>
+              <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) window.speechSynthesis.cancel(); }} title={voiceMode ? "Voice mode ON" : "Enable voice mode"} style={{
+  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+  background: voiceMode ? `${accent}35` : "rgba(108,71,255,0.12)",
+  border: voiceMode ? `1px solid ${accent}90` : "1px solid rgba(108,71,255,0.35)",
+  color: voiceMode ? accent : "#c4b5fd",
+  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+  transition: "all 0.2s",
+  boxShadow: voiceMode ? `0 0 16px ${accent}50` : "none"
+}}>
+  <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
+</button>
                 <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
               </button>
               <MicButton onTranscript={t => { setInput(t); }} onAutoSend={t => { setInput(""); sendMessage(t); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
