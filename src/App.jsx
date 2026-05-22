@@ -2,6 +2,29 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
+function getSmartTokenLimit(text) {
+  const t = text.trim();
+  const len = t.length;
+  const isImage = /generate|create|draw|make|design|paint|render|image|photo|picture|wallpaper|logo|album|cover|portrait|art/i.test(t);
+  const isCode = /code|function|script|build|program|write a|create a|develop|component|api|html|css|javascript|python/i.test(t);
+  const isLong = /explain|describe|essay|article|blog|story|report|analyze|compare|summarize|list all|everything about/i.test(t);
+  if (isImage) return 400;
+  if (isCode) return 1200;
+  if (isLong) return 1000;
+  if (len < 20) return 150;
+  if (len < 60) return 300;
+  if (len < 150) return 500;
+  return 700;
+}
+
+function getSmartSystemPrompt(text) {
+  const t = text.trim().toLowerCase();
+  const isImage = /generate|create|draw|make|design|paint|render|image|photo|picture|wallpaper|logo|album|cover|portrait|art/i.test(t);
+  const full = buildSystemPrompt();
+  if (isImage) return full;
+  return full.slice(0, 800);
+}
+
 function buildSystemPrompt() {
   const memory = (() => { try { return JSON.parse(localStorage.getItem("kraft_memory")) || {}; } catch { return {}; } })();
   const memoryBlock = Object.keys(memory).length > 0
@@ -1043,6 +1066,8 @@ export default function App() {
       .slice(isLightModel ? -2 : -6);
 
     const liveContext = await fetchLiveContext(text);
+    const smartTokens = getSmartTokenLimit(text);
+    const smartSystem = getSmartSystemPrompt(text);
 
     try {
       const lastUserMsg = attachedImage
@@ -1051,8 +1076,8 @@ export default function App() {
             { type: "text", text: text || "What's in this image?" }
           ]}
         : null;
-      const systemContent = buildSystemPrompt() + (liveContext
-        ? `\n\nLIVE WEB CONTEXT (fetched right now for this query — use this to answer current events, treat as up to date):\n${liveContext}\n\nToday's date: ${new Date().toDateString()}`
+      const systemContent = smartSystem + (liveContext
+        ? `\n\nLIVE WEB CONTEXT:\n${liveContext}\n\nToday's date: ${new Date().toDateString()}`
         : `\n\nToday's date: ${new Date().toDateString()}`);
 
       const messagesPayload = lastUserMsg
@@ -1068,7 +1093,7 @@ export default function App() {
         },
         body: JSON.stringify({
           model: attachedImage ? "llama-3.2-11b-vision-preview" : model,
-          max_tokens: 1800,
+          max_tokens: smartTokens,
           messages: messagesPayload
         })
       });
