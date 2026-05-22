@@ -4,15 +4,14 @@ import App from "./App.jsx";
 import KraftLogin from "./KraftLogin.jsx";
 
 function Root() {
-  const [unlocked, setUnlocked] = useState(
-    sessionStorage.getItem("kraft_unlocked") === "1"
-  );
-  return unlocked ? <App /> : (
-    <KraftLogin onUnlock={() => {
-      sessionStorage.setItem("kraft_unlocked", "1");
-      setUnlocked(true);
-    }} />
-  );
+  const [unlocked, setUnlocked] = useState(false);
+
+  if (!unlocked) {
+    return (
+      <KraftLogin onUnlock={() => setUnlocked(true)} />
+    );
+  }
+  return <App />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
