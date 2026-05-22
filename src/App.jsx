@@ -333,20 +333,32 @@ function inlineFormat(text) {
 }
 
 function ThinkingDots({ accent }) {
+  const [frame, setFrame] = useState(0);
+  const frames = ["THINKING", "READING", "CRAFTING"];
+  useEffect(() => {
+    const t = setInterval(() => setFrame(f => (f + 1) % frames.length), 1800);
+    return () => clearInterval(t);
+  }, []);
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 4px" }}>
-      <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-        {[0, 1, 2].map(i => (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 4px" }}>
+      <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 18 }}>
+        {[0, 1, 2, 3].map(i => (
           <div key={i} style={{
-            width: 7, height: 7, borderRadius: "50%",
-            background: `linear-gradient(135deg, ${accent}, ${accent}99)`,
-            animation: `kpulse 1.4s ease-in-out ${i * 0.18}s infinite`
+            width: 3, borderRadius: 4,
+            background: accent,
+            animation: `kbar 1.1s ease-in-out ${i * 0.15}s infinite`,
           }} />
         ))}
       </div>
-      <span style={{ fontSize: 12, color: accent, letterSpacing: 2, fontWeight: 500, opacity: 0.7 }}>
-        THINKING
+      <span style={{ fontSize: 11, color: accent, letterSpacing: 2.5, fontWeight: 600, opacity: 0.75, transition: "opacity 0.4s" }}>
+        {frames[frame]}
       </span>
+      <style>{`
+        @keyframes kbar {
+          0%, 100% { height: 4px; opacity: 0.3; }
+          50% { height: 18px; opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -391,10 +403,21 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
       )}
       <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: 4 }}>
         {!isUser && (
-          <span style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#1a1714", letterSpacing: 2, fontWeight: 700, paddingLeft: 2 }}>
-            KRAFT AI
-          </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 2 }}>
+            <span style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#1a1714", letterSpacing: 2, fontWeight: 700 }}>KRAFT AI</span>
+            <button onClick={() => { navigator.clipboard.writeText(msg.content); }} title="Copy" style={{
+              background: "none", border: "none", cursor: "pointer", padding: "2px 6px",
+              color: isDark ? "#4b5563" : "#9ca3af", fontSize: 13, borderRadius: 6,
+              transition: "color 0.2s"
+            }}
+              onMouseEnter={e => e.currentTarget.style.color = isDark ? "#a78bfa" : "#6c47ff"}
+              onMouseLeave={e => e.currentTarget.style.color = isDark ? "#4b5563" : "#9ca3af"}
+            >⎘ copy</button>
+          </div>
         )}
+        <div style={{ fontSize: 10, color: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.25)", marginTop: 4, paddingLeft: isUser ? 0 : 2, textAlign: isUser ? "right" : "left", letterSpacing: 0.5 }}>
+          {new Date(msg.ts || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </div>
         <div style={{
           padding: "13px 18px",
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
@@ -596,6 +619,17 @@ export default function App() {
   const [voiceMode, setVoiceMode] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [attachedImage, setAttachedImage] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setAttachedImage({ base64: reader.result.split(",")[1], mime: file.type, name: file.name });
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
   const nextId = useRef(2);
   const activeChatRef = useRef(null);
   useEffect(() => { activeChatRef.current = chats.find(c => c.id === activeChatId); }, [chats, activeChatId]);
@@ -612,6 +646,7 @@ export default function App() {
 
   const activeChat = chats.find(c => c.id === activeChatId);
   const isNewChat = activeChat?.messages.length === 1 && activeChat.messages[0].role === "assistant";
+  const [showStarters, setShowStarters] = useState(false);
   const starters = [
     "Drop a beat concept for me 🎵",
     "Explain blockchain in 3 sentences",
@@ -672,7 +707,7 @@ export default function App() {
 
     const currentChat = activeChatRef.current || chats.find(c => c.id === activeChatId);
     if (!currentChat) return;
-    const userMsg = { role: "user", content: text };
+    const userMsg = { role: "user", content: text, ts: Date.now() };
     const updatedMessages = [...currentChat.messages, userMsg];
 
     setChats(prev => prev.map(c => c.id === activeChatId
@@ -687,6 +722,17 @@ export default function App() {
       .slice(-6);
 
     try {
+      const lastUserMsg = attachedImage
+        ? { role: "user", content: [
+            { type: "image_url", image_url: { url: `data:${attachedImage.mime};base64,${attachedImage.base64}` } },
+            { type: "text", text: text || "What's in this image?" }
+          ]}
+        : null;
+      const messagesPayload = lastUserMsg
+        ? [...[{ role: "system", content: buildSystemPrompt() }, ...history.slice(0, -1)], lastUserMsg]
+        : [{ role: "system", content: buildSystemPrompt() }, ...history];
+      setAttachedImage(null);
+
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -694,21 +740,27 @@ export default function App() {
           "Authorization": `Bearer ${GROQ_KEY}`
         },
         body: JSON.stringify({
-          model: model,
+          model: attachedImage ? "llama-3.2-11b-vision-preview" : model,
           max_tokens: 1800,
-          messages: [{ role: "system", content: buildSystemPrompt() }, ...history]
+          messages: messagesPayload
         })
       });
       const data = await response.json();
       if (data.error) throw new Error(data.error.message);
       const aiContent = data.choices?.[0]?.message?.content || "No response.";
-      const aiMsg = { role: "assistant", content: aiContent };
+      const aiMsg = { role: "assistant", content: aiContent, ts: Date.now() };
       const msgKey = Date.now();
       setNewMsgId(msgKey);
       setChats(prev => prev.map(c => c.id === activeChatId
         ? { ...c, messages: [...updatedMessages, { ...aiMsg, _key: msgKey }] }
         : c
       ));
+      if (document.hidden) {
+        const orig = document.title;
+        document.title = "⚡ KRAFT AI — Response ready";
+        const restore = () => { document.title = orig; window.removeEventListener("focus", restore); };
+        window.addEventListener("focus", restore);
+      }
       if (voiceMode) {
         const clean = aiContent.replace(/\*\*|`|#{1,3} /g, "").replace(/\n+/g, " ").trim();
         const doSpeak = () => {
@@ -862,7 +914,7 @@ textarea::placeholder { color: #888; }
           <div style={{ fontSize: 10, color: isDark ? "#6c47ff" : "#3a1fa8", letterSpacing: 3, fontWeight: 700, padding: "8px 8px 10px" }}>CONVERSATIONS</div>
           {chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase())).map(c => (
             <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
-              <button onClick={() => setActiveChatId(c.id)} style={{
+              <button onClick={() => { setActiveChatId(c.id); if (window.innerWidth < 640) setSidebarOpen(false); }} style={{
                 flex: 1, textAlign: "left", padding: "9px 10px",
                 background: c.id === activeChatId ? "rgba(108,71,255,0.12)" : "transparent",
                 border: c.id === activeChatId ? "1px solid rgba(108,71,255,0.22)" : "1px solid transparent",
@@ -951,12 +1003,12 @@ textarea::placeholder { color: #888; }
           {activeChat?.messages.map((m, i) => (
             <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} />
           ))}
-          {isNewChat && (
+          {(isNewChat || showStarters) && (
             <div style={{ padding: "32px 0 8px", animation: "fadeIn 0.5s ease" }}>
               <p style={{ textAlign: "center", fontSize: 13, color: isDark ? "#4b5563" : "#6b7280", marginBottom: 20, letterSpacing: 1 }}>QUICK START</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
                 {starters.map(s => (
-                  <button key={s} onClick={() => setInput(s)} style={{
+                  <button key={s} onClick={() => { setInput(s); setShowStarters(false); }} style={{
                     padding: "9px 16px", borderRadius: 20, fontSize: 13,
                     background: isDark ? "rgba(108,71,255,0.08)" : "rgba(0,0,0,0.06)",
                     border: isDark ? "1px solid rgba(108,71,255,0.2)" : "1px solid rgba(0,0,0,0.12)",
@@ -1006,11 +1058,36 @@ textarea::placeholder { color: #888; }
             overflowY: "auto",
             display: "flex", flexDirection: "column", gap: 0
           }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-              <span style={{ fontWeight: 700, fontSize: 14, color: isDark ? "#e2e8f0" : "#1a1a2e", fontFamily: "'Inter', -apple-system, sans-serif", letterSpacing: 2 }}>SETTINGS</span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 13, color: isDark ? "#e2e8f0" : "#1a1a2e", letterSpacing: 3 }}>SETTINGS</div>
+                <div style={{ fontSize: 11, color: isDark ? "#4b5563" : "#9ca3af", marginTop: 2 }}>KRAFT AI · Kigali, Rwanda</div>
+              </div>
               <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", color: isDark ? "#64748b" : "#6b6560", fontSize: 18, cursor: "pointer", display:"flex", alignItems:"center" }}><span className="ms" style={{fontSize:20}}>close</span></button>
             </div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 20, padding: "10px 12px", borderRadius: 12, background: isDark ? "rgba(108,71,255,0.08)" : "rgba(108,71,255,0.06)", border: `1px solid ${accent}22` }}>
+              {[["🎨","Look"],["🔊","Voice"],["🧠","Memory"],["⚙️","System"]].map(([icon, label], idx) => (
+                <button key={label} onClick={e => {
+                  document.querySelectorAll(".settings-section").forEach((el, i) => {
+                    el.style.display = i === idx ? "block" : "none";
+                  });
+                  e.currentTarget.parentNode.querySelectorAll("button").forEach(b => {
+                    b.style.background = "transparent"; b.style.color = isDark ? "#64748b" : "#9ca3af";
+                  });
+                  e.currentTarget.style.background = `${accent}22`;
+                  e.currentTarget.style.color = accent;
+                }} style={{
+                  flex: 1, padding: "7px 4px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 600,
+                  background: idx === 0 ? `${accent}22` : "transparent",
+                  border: "none", color: idx === 0 ? accent : isDark ? "#64748b" : "#9ca3af",
+                  fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", gap: 3
+                }}>
+                  <span>{icon}</span><span>{label}</span>
+                </button>
+              ))}
+            </div>
 
+            <div className="settings-section">
             {/* Theme */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>APPEARANCE</div>
@@ -1210,6 +1287,13 @@ textarea::placeholder { color: #888; }
             }}
               onFocus={() => {}}
             >
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+              {attachedImage && (
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  <img src={`data:${attachedImage.mime};base64,${attachedImage.base64}`} alt="attached" style={{ width: 38, height: 38, borderRadius: 8, objectFit: "cover", border: "1px solid rgba(108,71,255,0.3)" }} />
+                  <button onClick={() => setAttachedImage(null)} style={{ position: "absolute", top: -6, right: -6, width: 16, height: 16, borderRadius: "50%", background: "#e11d48", border: "none", color: "#fff", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                </div>
+              )}
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -1232,9 +1316,23 @@ textarea::placeholder { color: #888; }
                   maxHeight: 160, overflowY: "auto"
                 }}
               />
+              <button onClick={() => setShowStarters(v => !v)} title="Quick starters" style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: showStarters ? `${accent}22` : "rgba(108,71,255,0.08)",
+                border: showStarters ? `1px solid ${accent}50` : "1px solid rgba(108,71,255,0.2)",
+                color: showStarters ? accent : "#4b3a8a",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16
+              }}>✦</button>
+              <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: attachedImage ? "rgba(16,185,129,0.15)" : "rgba(108,71,255,0.08)",
+                border: attachedImage ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(108,71,255,0.2)",
+                color: attachedImage ? "#10b981" : "#4b3a8a",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
+              }}>📎</button>
               <button
                 onClick={sendMessage}
-                disabled={loading || !input.trim()}
+                disabled={loading || (!input.trim() && !attachedImage)}
                 style={{
                   width: 40, height: 40, borderRadius: 12, flexShrink: 0,
                   background: loading || !input.trim()
@@ -1263,12 +1361,18 @@ textarea::placeholder { color: #888; }
               </button>
               <MicButton onTranscript={t => { setInput(t); }} onAutoSend={t => { setInput(""); sendMessage(t); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
             </div>
-            <p style={{
-              textAlign: "center", fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
-              marginTop: 10, letterSpacing: 1.5
-            }}>
-              KRAFT AI · BUILT BY KRAFT KARTEL · KIGALI, RWANDA · SHIFT+ENTER FOR NEW LINE
-            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "0 2px" }}>
+              <p style={{ fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)", margin: 0, letterSpacing: 1.5 }}>
+                KRAFT AI · KIGALI, RWANDA · SHIFT+ENTER FOR NEW LINE
+              </p>
+              <span style={{
+                fontSize: 11, fontFamily: "monospace",
+                color: input.length > 3500 ? "#e11d48" : input.length > 2000 ? "#f59e0b" : isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.25)",
+                transition: "color 0.3s"
+              }}>
+                {input.length > 0 ? `${input.length} chars · ~${Math.ceil(input.length / 4)} tokens` : ""}
+              </span>
+            </div>
           </div>
         </div>
       </div>
