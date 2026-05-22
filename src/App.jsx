@@ -434,13 +434,23 @@ function speakText(text, voiceSettings = {}) {
       : /male|david|mark|daniel|alex|jorge|diego/i.test(v.name)
   );
   if (preferred.length) utt.voice = preferred[0];
-  utt.rate = voiceSettings.rate || 1;
-  utt.pitch = voiceSettings.pitch || 1;
+  const tone = voiceSettings.tone || "natural";
+  const tonePresets = {
+    natural:    { rate: voiceSettings.rate || 1,    pitch: voiceSettings.pitch || 1 },
+    calm:       { rate: (voiceSettings.rate || 1) * 0.85, pitch: (voiceSettings.pitch || 1) * 0.9 },
+    energetic:  { rate: (voiceSettings.rate || 1) * 1.2,  pitch: (voiceSettings.pitch || 1) * 1.15 },
+    deep:       { rate: (voiceSettings.rate || 1) * 0.9,  pitch: (voiceSettings.pitch || 1) * 0.7 },
+    whisper:    { rate: (voiceSettings.rate || 1) * 0.8,  pitch: (voiceSettings.pitch || 1) * 1.3 },
+    assistant:  { rate: (voiceSettings.rate || 1) * 1.05, pitch: (voiceSettings.pitch || 1) * 1.05 },
+  };
+  const preset = tonePresets[tone] || tonePresets.natural;
+  utt.rate = preset.rate;
+  utt.pitch = preset.pitch;
   utt.volume = 1;
   window.speechSynthesis.speak(utt);
 }
 
-function MicButton({ onTranscript, accent, voiceSettings }) {
+function MicButton({ onTranscript, accent, voiceSettings, voiceMode, onToggleVoiceMode }) {
   const [listening, setListening] = useState(false);
   const recRef = useRef(null);
 
@@ -448,6 +458,7 @@ function MicButton({ onTranscript, accent, voiceSettings }) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Speech recognition not supported in this browser."); return; }
     if (listening) { recRef.current?.stop(); setListening(false); return; }
+    if (window.speechSynthesis.speaking) window.speechSynthesis.pause();
     const rec = new SR();
     recRef.current = rec;
     rec.lang = "en-US";
@@ -455,9 +466,16 @@ function MicButton({ onTranscript, accent, voiceSettings }) {
     rec.onresult = e => {
       const t = Array.from(e.results).map(r => r[0].transcript).join(" ");
       onTranscript(t);
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     };
-    rec.onend = () => setListening(false);
-    rec.onerror = () => setListening(false);
+    rec.onend = () => {
+      setListening(false);
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+    };
+    rec.onerror = () => {
+      setListening(false);
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+    };
     rec.start();
     setListening(true);
   };
@@ -544,8 +562,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [model, setModel] = useState(localStorage.getItem("kraft_model") || "llama-3.3-70b-versatile");
   const [voiceSettings, setVoiceSettings] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("kraft_voice")) || { gender: "female", rate: 1, pitch: 1 }; } catch { return { gender: "female", rate: 1, pitch: 1 }; }
+    try { return JSON.parse(localStorage.getItem("kraft_voice")) || { gender: "female", rate: 1, pitch: 1, tone: "natural" }; } catch { return { gender: "female", rate: 1, pitch: 1, tone: "natural" }; }
   });
+  const [voiceMode, setVoiceMode] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const nextId = useRef(2);
@@ -648,6 +667,14 @@ export default function App() {
         ? { ...c, messages: [...updatedMessages, { ...aiMsg, _key: msgKey }] }
         : c
       ));
+      if (voiceMode) {
+        const clean = aiContent.replace(/\*\*|`|#{1,3} /g, "").replace(/\n+/g, " ").trim();
+        speakText(clean, voiceSettings);
+      }
+      if (voiceMode) {
+        const clean = aiContent.replace(/\*\*|`|#{1,3} /g, "").replace(/\n+/g, " ").trim();
+        speakText(clean, voiceSettings);
+      }
       // // extractAndSaveMemory(text, aiContent);
     } catch (e) {
       setChats(prev => prev.map(c => c.id === activeChatId
@@ -915,12 +942,20 @@ textarea::placeholder { color: #888; }
 
         {/* Settings Panel */}
         {showSettings && (
+          <div onClick={() => setShowSettings(false)} style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49, backdropFilter: "blur(2px)"
+          }} />
+        )}
+        {showSettings && (
           <div style={{
-            position: "absolute", top: 64, right: 16, zIndex: 50, width: 300,
+            position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 50,
+            width: "min(340px, 100vw)",
             background: isDark ? "#16161e" : "#faf8f5",
             border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
-            borderRadius: 16, padding: "20px",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.4)"
+            borderRadius: "16px 0 0 16px", padding: "20px",
+            boxShadow: "-8px 0 40px rgba(0,0,0,0.4)",
+            overflowY: "auto",
+            display: "flex", flexDirection: "column", gap: 0
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
               <span style={{ fontWeight: 700, fontSize: 14, color: isDark ? "#e2e8f0" : "#1a1a2e", fontFamily: "'Inter', -apple-system, sans-serif", letterSpacing: 2 }}>SETTINGS</span>
@@ -1013,6 +1048,24 @@ textarea::placeholder { color: #888; }
                   setVoiceSettings(v);
                   localStorage.setItem("kraft_voice", JSON.stringify(v));
                 }} style={{ width: "100%", accentColor: accent }} />
+              </div>
+            <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 11, color: isDark ? "#4b5563" : "#6b6560", marginBottom: 8 }}>Tone preset</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {[["natural","Natural"],["calm","Calm"],["energetic","Energetic"],["deep","Deep"],["whisper","Whisper"],["assistant","Assistant"]].map(([val, label]) => (
+                    <button key={val} onClick={() => {
+                      const v = { ...voiceSettings, tone: val };
+                      setVoiceSettings(v);
+                      localStorage.setItem("kraft_voice", JSON.stringify(v));
+                    }} style={{
+                      padding: "6px 12px", borderRadius: 20, cursor: "pointer", fontSize: 11, fontWeight: 600,
+                      background: voiceSettings.tone === val ? `${accent}22` : isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
+                      border: voiceSettings.tone === val ? `1px solid ${accent}55` : isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.09)",
+                      color: voiceSettings.tone === val ? accent : isDark ? "#94a3b8" : "#3a3530",
+                      fontFamily: "inherit"
+                    }}>{label}</button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1145,7 +1198,18 @@ textarea::placeholder { color: #888; }
               >
                 {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
               </button>
-              <MicButton onTranscript={t => setInput(prev => prev ? prev + " " + t : t)} accent={accent} voiceSettings={voiceSettings} />
+              <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) window.speechSynthesis.cancel(); }} title={voiceMode ? "Voice mode ON — click to disable" : "Enable voice mode (AI speaks back)"} style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: voiceMode ? `${accent}30` : "rgba(108,71,255,0.08)",
+                border: voiceMode ? `1px solid ${accent}80` : "1px solid rgba(108,71,255,0.2)",
+                color: voiceMode ? accent : "#4b3a8a",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 0.2s",
+                boxShadow: voiceMode ? `0 0 14px ${accent}50` : "none"
+              }}>
+                <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
+              </button>
+              <MicButton onTranscript={t => { setInput(prev => prev ? prev + " " + t : t); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
             </div>
             <p style={{
               textAlign: "center", fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
