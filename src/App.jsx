@@ -610,7 +610,6 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
       const chunk = full.slice(0, i);
       setDisplayed(chunk);
 
-      // Speak each completed sentence as it appears
       if (isStreaming && voiceMode) {
         const newText = full.slice(spokenUpTo.current, i);
         const sentenceEnd = newText.search(/[.!?]\s/);
@@ -626,7 +625,6 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
 
       if (i < full.length) requestAnimationFrame(tick);
       else {
-        // Speak any remaining tail
         if (isStreaming && voiceMode) {
           const tail = full.slice(spokenUpTo.current).trim();
           if (tail.length > 4) {
@@ -661,18 +659,18 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
       <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: 4 }}>
         {!isUser && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 2 }}>
-            <span style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#1a1714", letterSpacing: 2, fontWeight: 700 }}>KRAFT AI</span>
+            <span style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700 }}>KRAFT AI</span>
             <button onClick={() => { navigator.clipboard.writeText(msg.content); }} title="Copy" style={{
               background: "none", border: "none", cursor: "pointer", padding: "2px 6px",
-              color: isDark ? "#4b5563" : "#9ca3af", fontSize: 13, borderRadius: 6,
+              color: isDark ? "#4b5563" : "#6b665c", fontSize: 13, borderRadius: 6,
               transition: "color 0.2s"
             }}
               onMouseEnter={e => e.currentTarget.style.color = isDark ? "#a78bfa" : "#6c47ff"}
-              onMouseLeave={e => e.currentTarget.style.color = isDark ? "#4b5563" : "#9ca3af"}
+              onMouseLeave={e => e.currentTarget.style.color = isDark ? "#4b5563" : "#6b665c"}
             >⎘ copy</button>
           </div>
         )}
-        <div style={{ fontSize: 10, color: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.25)", marginTop: 4, paddingLeft: isUser ? 0 : 2, textAlign: isUser ? "right" : "left", letterSpacing: 0.5 }}>
+        <div style={{ fontSize: 10, color: isDark ? "rgba(255,255,255,0.2)" : "#8c8779", marginTop: 4, paddingLeft: isUser ? 0 : 2, textAlign: isUser ? "right" : "left", letterSpacing: 0.5 }}>
           {new Date(msg.ts || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </div>
         <div style={{
@@ -680,16 +678,17 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
             ? isDark ? `${accent}25` : `${accent}12`
-            : isDark ? "rgba(255,255,255,0.04)" : "rgba(218,218,213,0.95)",
+            : isDark ? "rgba(255,255,255,0.04)" : "#f8f6f1",
           border: isUser
             ? `1px solid ${accent}40`
-            : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          color: isUser ? (isDark ? "#ddd6fe" : "#1a1714") : (isDark ? "#c9d1d9" : "#0f0d12"),
+            : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #d4d0c5",
+          color: isUser ? (isDark ? "#ddd6fe" : "#1a1714") : (isDark ? "#c9d1d9" : "#1f1c17"),
           fontSize: 14.5, lineHeight: 1.75,
           backdropFilter: "blur(8px)",
           boxShadow: isUser ? `0 4px 24px ${accent}20` : "none"
         }}>
-          {isUser ? msg.content : renderMarkdown(content, isDark, accent)}{!done && <span style={{display:"inline-block",width:2,height:"1em",background:accent,marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
+          {isUser ? msg.content : renderMarkdown(content, isDark, accent)}
+          {!done && <span style={{display:"inline-block",width:2,height:"1em",background:accent,marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
         </div>
       </div>
       {isUser && (
@@ -703,7 +702,6 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
     </div>
   );
 }
-
 const _ttsQueue = { chunks: [], voice: null, settings: {}, running: false };
 
 function _getVoice(gender) {
@@ -1425,7 +1423,7 @@ export default function App() {
           <div style={{
             position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 50,
             width: "min(340px, 100vw)",
-            background: isDark ? "#16161e" : "#ebebе6",
+            background: isDark ? "#16161e" : "#f8f6f1",
             border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
             borderRadius: "16px 0 0 16px", padding: "20px",
             boxShadow: "-8px 0 40px rgba(0,0,0,0.4)",
