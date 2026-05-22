@@ -628,6 +628,10 @@ export default function App() {
   }, [activeChatId]);
 
   useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+  }, [activeChatId]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeChat?.messages, loading]);
 
