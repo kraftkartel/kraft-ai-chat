@@ -1626,6 +1626,24 @@ export default function App() {
   color: attachedImage ? "#10b981" : "#c4b5fd",
   cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
 }}>📎</button>
+             <MicButton
+               onTranscript={t => setInput(t)}
+               onAutoSend={t => { setInput(""); sendMessage(t); }}
+               accent={accent}
+               voiceSettings={voiceSettings}
+               voiceMode={voiceMode}
+             />
+             <button onClick={() => sendMessage()} title="Send" style={{
+               width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+               background: input.trim() || attachedImage ? `linear-gradient(135deg, ${accent}, ${accent}cc)` : "rgba(108,71,255,0.08)",
+               border: `1px solid ${accent}40`,
+               color: "#fff", cursor: "pointer",
+               display: "flex", alignItems: "center", justifyContent: "center",
+               boxShadow: input.trim() ? `0 0 16px ${accent}40` : "none",
+               transition: "all 0.2s"
+             }}>
+               <span className="ms" style={{fontSize: 20}}>send</span>
+             </button>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "0 2px" }}>
               <p style={{ fontSize: 11, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)", margin: 0, letterSpacing: 1.5 }}>
