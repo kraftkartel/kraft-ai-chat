@@ -1730,7 +1730,7 @@ textarea::placeholder { color: #888; }
                 id="kraft-input"
                 name="kraft-input"
                 autoComplete="off"
-placeholder="Ask KRAFT AI anything..."
+                placeholder="Ask KRAFT AI anything..."
                 rows={1}
                 style={{
                   flex: 1, background: "transparent", border: "none",
