@@ -680,25 +680,37 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
 
   const onTranscriptRef = useRef(onTranscript);
   const onAutoSendRef = useRef(onAutoSend);
+
   useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
   useEffect(() => { onAutoSendRef.current = onAutoSend; }, [onAutoSend]);
 
   const toggle = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert("Speech recognition not supported in this browser."); return; }
-    if (listening) { recRef.current?.stop(); setListening(false); return; }
+    if (!SR) { 
+      alert("Speech recognition not supported in this browser."); 
+      return; 
+    }
+
+    if (listening) { 
+      recRef.current?.stop(); 
+      setListening(false); 
+      return; 
+    }
+
+    // Stop any ongoing AI speech when starting to listen
     stopSpeaking();
+
     const rec = new SR();
     recRef.current = rec;
     rec.lang = "en-US";
     rec.interimResults = true;
     rec.continuous = false;
+
     let finalTranscript = "";
     let silenceTimer = null;
 
     rec.onresult = e => {
-      // Interrupt AI speech immediately when user speaks
-      stopSpeaking();
+      stopSpeaking(); // Interrupt AI speech immediately
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
@@ -708,6 +720,7 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
         }
       }
       onTranscriptRef.current(finalTranscript + interim);
+
       clearTimeout(silenceTimer);
       silenceTimer = setTimeout(() => {
         const text = finalTranscript.trim();
@@ -718,7 +731,7 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
           onAutoSendRef.current(text);
           finalTranscript = "";
         }
-      }, 900);
+      }, 800); // Slightly shorter for better responsiveness
     };
 
     rec.onend = () => {
@@ -742,16 +755,25 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
   };
 
   return (
-    <button onClick={toggle} title={listening ? "Stop" : "Voice input"} style={{
-      width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-      background: listening ? "rgba(225,29,72,0.15)" : `${accent}15`,
-      border: listening ? "1px solid rgba(225,29,72,0.4)" : `1px solid ${accent}40`,
-      color: listening ? "#e11d48" : accent,
-      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-      transition: "all 0.2s",
-      animation: listening ? "kpulse 1s ease-in-out infinite" : "none"
-    }}>
-      <span className="ms" style={{fontSize:20}}>{listening ? "stop_circle" : "mic"}</span>
+    <button 
+      onClick={toggle} 
+      title={listening ? "Stop listening" : "Voice input (click to speak)"} 
+      style={{
+        width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+        background: listening ? "rgba(225,29,72,0.15)" : `${accent}15`,
+        border: listening ? "1px solid rgba(225,29,72,0.4)" : `1px solid ${accent}40`,
+        color: listening ? "#e11d48" : accent,
+        cursor: "pointer", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        transition: "all 0.2s",
+        animation: listening ? "kpulse 1s ease-in-out infinite" : "none"
+      }}
+    >
+      <span className="ms" style={{fontSize:20}}>
+        {listening ? "stop_circle" : "mic"}
+      </span>
     </button>
   );
 }
