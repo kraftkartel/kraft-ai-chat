@@ -9,51 +9,65 @@ function buildSystemPrompt() {
     : "";
   return `You are KRAFT AI, a powerful AI created exclusively by Kraft Kartel, a music producer and creative entrepreneur based in Kigali, Rwanda.
 
-IMAGE GENERATION & EDITING:
-You can generate and edit images using the Pollinations API. When any image-related request is made, you MUST respond with a markdown image using this exact format:
+IMAGE GENERATION:
+You can generate images. When ANY image request is made you MUST output a real working markdown image tag. Follow this exactly:
 
-![description](https://image.pollinations.ai/prompt/{encoded_prompt}?width={w}&height={h}&seed={seed}&nologo=true&enhance=true)
+STEP 1 — Build a rich descriptive prompt in plain English. Be very specific about subject, style, lighting, colors, mood, camera, quality.
 
-RULES:
-- ALWAYS encode the prompt: spaces become %20, commas become %2C, quotes become %22, parentheses become %28 and %29
-- ALWAYS pick the best width/height for the request: portrait=768x1024, landscape=1024x768, square=1024x1024, banner=1280x640, phone wallpaper=1080x1920
-- ALWAYS use a random seed number between 1000 and 99999 for variety
-- ALWAYS add enhance=true for maximum quality
-- NEVER explain what you're doing — just generate the image immediately then add a short caption below it
-- Generate multiple images (2-4) when asked for variations or options
-- When editing an image concept (change background, change style, change colors, add elements), rebuild the full prompt with the changes applied — do not reference the previous image
-- When asked for a logo: use clean vector style, minimal, professional, transparent-friendly prompt
-- When asked for a photo: use photorealistic, 8k, shot on Sony A7, natural lighting style modifiers
-- When asked for art: use the specific art style requested — oil painting, watercolor, anime, comic, 3D render, etc.
-- When asked for a wallpaper: always use 1080x1920 or 1920x1080 and cinematic quality modifiers
+STEP 2 — Encode it: replace every space with %20, every comma with %2C, every ( with %28, every ) with %29, every " with %22, every & with %26, every # with %23, every + with %2B.
 
-PROMPT ENGINEERING (apply automatically based on request type):
+STEP 3 — Pick dimensions:
+- Square (default, logos, portraits): 1024x1024
+- Landscape (scenes, wallpapers, banners): 1280x720
+- Portrait (phone wallpaper, posters): 768x1024
+- Wide cinematic: 1920x1080
 
-For PHOTOS add: "photorealistic, 8k uhd, shot on Sony A7R IV, natural lighting, highly detailed, sharp focus, professional photography"
+STEP 4 — Output EXACTLY this format with NO line breaks inside the URL:
+![prompt description here](https://image.pollinations.ai/prompt/YOUR_ENCODED_PROMPT_HERE?width=1024&height=1024&seed=RANDOM_5_DIGIT_NUMBER&model=flux&nologo=true&enhance=true)
 
-For ART add the style then: "highly detailed, vibrant colors, masterpiece, trending on artstation"
+CRITICAL RULES:
+- The URL must be on ONE single line — never break it across lines
+- seed must be a random 5-digit number like 42817 or 73920 — different every time
+- NEVER write placeholder text like {prompt} or {seed} — always fill in real values
+- NEVER say "here is the image" or explain — just output the markdown tag then a one-line caption
+- For variations, output 2-3 img tags with different seeds
+- model=flux gives best quality — always use it
 
-For LOGOS add: "minimal flat vector logo, clean design, professional, scalable, transparent background, bold typography"
+PROMPT RECIPES (auto-apply):
 
-For PORTRAITS add: "professional portrait, studio lighting, sharp eyes, skin texture detail, bokeh background"
+PHOTO → "[subject], photorealistic, 8k uhd, Sony A7R IV, natural golden hour lighting, highly detailed, sharp focus, professional photography, award winning"
 
-For WALLPAPERS add: "cinematic, ultra wide, atmospheric, moody lighting, ultra detailed, 4k"
+PORTRAIT → "[subject], close up portrait, studio lighting, sharp eyes, detailed skin texture, shallow depth of field, bokeh background, 85mm lens, 8k"
 
-For ALBUM COVERS add: "album cover art, bold typography space, music industry quality, striking visual, square format"
+WALLPAPER → "[subject], cinematic landscape, ultra wide angle, atmospheric, volumetric light, ultra detailed, 4k, trending on artstation, epic scale"
 
-For PRODUCTS add: "product photography, studio white background, professional lighting, commercial quality, ultra sharp"
+LOGO → "[brand] logo, minimal flat vector, clean professional design, bold typography, scalable, white background, geometric, modern brand identity"
 
-EDITING COMMANDS — when user says things like:
-- "make it darker" → add "dark moody atmosphere, low key lighting, shadows"
-- "make it more realistic" → add "photorealistic, hyperrealistic, 8k, sharp"  
-- "change background to X" → replace background description in prompt
-- "make it anime" → add "anime style, Studio Ghibli, cel shading, vibrant"
-- "make it black and white" → add "black and white photography, monochrome, high contrast"
-- "make it cinematic" → add "cinematic lighting, anamorphic lens, movie still, color graded"
-- "add X to the image" → rebuild prompt including X naturally
-- "make it look like Y" → adopt Y's visual style in the prompt
+ALBUM COVER → "[concept] album cover, square format, bold striking visual, music industry quality, dramatic lighting, typographic space at top, high contrast"
 
-ALWAYS show the image first, then offer: "Want variations, a different style, or any edits?"
+ANIME → "[subject], anime style, Studio Ghibli quality, cel shading, vibrant saturated colors, detailed background, cinematic composition"
+
+OIL PAINTING → "[subject], oil painting, classical technique, rich textures, impasto brushwork, renaissance lighting, museum quality, highly detailed"
+
+3D RENDER → "[subject], 3D render, octane render, physically based materials, studio HDRI lighting, ultra sharp, 8k, blender cycles"
+
+PRODUCT → "[product], product photography, pure white background, studio softbox lighting, commercial quality, ultra sharp, reflection on surface"
+
+ARCHITECTURE → "[building/space], architectural visualization, golden hour, photorealistic render, ultra detailed, professional photography"
+
+EDIT COMMANDS (rebuild full prompt with changes):
+- "darker / moodier" → add: dark moody atmosphere, low key lighting, deep shadows, noir
+- "brighter / vibrant" → add: bright vivid colors, high key lighting, saturated, cheerful
+- "more realistic" → add: hyperrealistic, photographic, 8k, sharp details, no artifacts
+- "anime style" → swap style to: anime, Studio Ghibli, cel shaded, vibrant
+- "black and white" → add: black and white, monochrome, high contrast, film grain
+- "cinematic" → add: cinematic color grade, anamorphic lens flare, movie still, 2.39:1
+- "futuristic" → add: cyberpunk, neon lights, futuristic city, sci-fi, blade runner aesthetic
+- "vintage" → add: vintage film, grain, faded colors, lomography, retro aesthetic
+- "add [element]" → weave element naturally into the full rebuilt prompt
+- "change background to [X]" → replace background portion of prompt with X
+
+After every image say exactly: "Want variations, edits, or a different style?"
 
 IDENTITY:
 - You are NOT ChatGPT, Claude, Gemini, Grok, or any other AI
@@ -105,6 +119,79 @@ RULES:
 - Sound like the smartest person in the room${memoryBlock}`;
 }
 
+
+function buildImageUrl(prompt, options = {}) {
+  const {
+    width = 1024,
+    height = 1024,
+    seed = Math.floor(Math.random() * 99999) + 1000,
+    model = "flux",
+  } = options;
+  const encoded = encodeURIComponent(prompt);
+  return `https://image.pollinations.ai/prompt/${encoded}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true&enhance=true`;
+}
+
+function ImageBlock({ src, alt, isDark, accent }) {
+  const [status, setStatus] = useState("loading");
+  return (
+    <div style={{ margin: "12px 0" }}>
+      {status === "loading" && (
+        <div style={{
+          width: "100%", height: 200, borderRadius: 12,
+          background: isDark ? "rgba(108,71,255,0.08)" : "rgba(108,71,255,0.05)",
+          border: `1px solid ${accent}30`,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12
+        }}>
+          <div style={{ display: "flex", gap: 5 }}>
+            {[0,1,2,3].map(i => (
+              <div key={i} style={{
+                width: 3, borderRadius: 4, background: accent,
+                animation: `kbar 1.1s ease-in-out ${i * 0.15}s infinite`
+              }} />
+            ))}
+          </div>
+          <span style={{ fontSize: 12, color: accent, letterSpacing: 2, fontWeight: 600, opacity: 0.7 }}>GENERATING IMAGE</span>
+        </div>
+      )}
+      {status === "error" && (
+        <div style={{
+          width: "100%", padding: "20px", borderRadius: 12, textAlign: "center",
+          background: "rgba(225,29,72,0.08)", border: "1px solid rgba(225,29,72,0.2)",
+          color: "#e11d48", fontSize: 13
+        }}>Failed to generate — try again</div>
+      )}
+      <img
+        src={src} alt={alt}
+        style={{
+          maxWidth: "100%", borderRadius: 12,
+          border: `1px solid ${accent}30`,
+          display: status === "loaded" ? "block" : "none",
+          boxShadow: `0 8px 32px ${accent}20`
+        }}
+        onLoad={() => setStatus("loaded")}
+        onError={() => setStatus("error")}
+      />
+      {status === "loaded" && (
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <button onClick={() => { const a = document.createElement("a"); a.href = src; a.download = (alt || "kraft-image") + ".jpg"; a.target = "_blank"; a.click(); }} style={{
+            padding: "6px 14px", borderRadius: 8, fontSize: 11, cursor: "pointer",
+            background: `${accent}15`, border: `1px solid ${accent}30`,
+            color: accent, fontFamily: "inherit", fontWeight: 600
+          }}>⬇ Download</button>
+          <button onClick={() => { window.open(src, "_blank"); }} style={{
+            padding: "6px 14px", borderRadius: 8, fontSize: 11, cursor: "pointer",
+            background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+            border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
+            color: isDark ? "#64748b" : "#6b7280", fontFamily: "inherit", fontWeight: 600
+          }}>↗ Open full size</button>
+        </div>
+      )}
+      {alt && status === "loaded" && (
+        <div style={{ fontSize: 11, color: isDark ? "#4b5563" : "#9ca3af", marginTop: 6, fontStyle: "italic" }}>{alt}</div>
+      )}
+    </div>
+  );
+}
 
 function StarCanvas({ responding, isDark }) {
   const canvasRef = useRef(null);
@@ -300,7 +387,7 @@ function StarCanvas({ responding, isDark }) {
   );
 }
 
-function renderMarkdown(text) {
+function renderMarkdown(text, isDark, accent) {
   const lines = text.split("\n");
   const elements = [];
   let i = 0;
@@ -311,26 +398,7 @@ function renderMarkdown(text) {
     const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)/);
     if (imgMatch) {
       const [, alt, src] = imgMatch;
-      elements.push(
-        <div key={i} style={{ margin: "12px 0" }}>
-          <img
-            src={src} alt={alt}
-            style={{ maxWidth: "100%", borderRadius: 12, border: "1px solid rgba(108,71,255,0.2)", display: "block" }}
-            onLoad={e => e.target.style.opacity = 1}
-            onError={e => { e.target.style.display = "none"; }}
-          />
-          {alt && <div style={{ fontSize: 11, color: "#64748b", marginTop: 6, fontStyle: "italic" }}>{alt}</div>}
-          <button onClick={() => {
-            const a = document.createElement("a");
-            a.href = src; a.download = alt || "kraft-image"; a.target = "_blank";
-            a.click();
-          }} style={{
-            marginTop: 8, padding: "5px 14px", borderRadius: 8, fontSize: 11, cursor: "pointer",
-            background: "rgba(108,71,255,0.1)", border: "1px solid rgba(108,71,255,0.25)",
-            color: "#a78bfa", fontFamily: "inherit", fontWeight: 600
-          }}>⬇ Download</button>
-        </div>
-      );
+      elements.push(<ImageBlock key={i} src={src} alt={alt} isDark={isDark} accent={accent} />);
       i++;
       continue;
     }
@@ -536,7 +604,7 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
           backdropFilter: "blur(8px)",
           boxShadow: isUser ? `0 4px 24px ${accent}20` : "none"
         }}>
-          {isUser ? msg.content : renderMarkdown(content)}{!done && <span style={{display:"inline-block",width:2,height:"1em",background:accent,marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
+          {isUser ? msg.content : renderMarkdown(content, isDark, accent)}{!done && <span style={{display:"inline-block",width:2,height:"1em",background:accent,marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
         </div>
       </div>
       {isUser && (
