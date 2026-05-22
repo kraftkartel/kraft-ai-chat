@@ -1141,43 +1141,80 @@ export default function App() {
   }
 
   return (
-    <div style={{
-      position: "fixed", inset: 0,
-      background: isDark ? "#0b0b0e" : "#e8e8e2",
-      fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-      color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
-    }}>
+  <div style={{
+    position: "fixed", inset: 0,
+    background: isDark ? "#0b0b0e" : "#f5f3eb",
+    fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+    color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
+  }}>
       <StarCanvas responding={loading} isDark={isDark} />
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
-        @keyframes msgIn {
-          from { opacity: 0; transform: translateY(16px) scale(0.97); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes kpulse {
-          0%, 100% { opacity: 0.2; transform: scale(0.7); }
-          50% { opacity: 1; transform: scale(1.3); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; } to { opacity: 1; }
-        }
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
-        textarea:focus { outline: none; }
-        textarea { resize: none; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(108,71,255,0.2); border-radius: 4px; }
-        input::placeholder { color: #888; }
-textarea::placeholder { color: #888; }
-        button:hover { filter: brightness(1.15); }
-.ms { font-family: 'Material Symbols Rounded'; font-style: normal; font-weight: normal; font-size: 20px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-smoothing: antialiased; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
-      `}</style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes kpulse {
+    0%, 100% { opacity: 0.2; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1.3); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  /* ==================== LIGHT MODE IMPROVEMENTS ==================== */
+  body, .light-mode-fix {
+    color: #1a1714;
+  }
+
+  /* Message bubbles - Light mode */
+  .light .message-assistant {
+    background: #f8f6f1 !important;
+    border: 1px solid #d4d0c5 !important;
+    color: #1a1714 !important;
+  }
+
+  /* Sidebar & Topbar */
+  .light sidebar, .light topbar {
+    background: #f4f2eb !important;
+    border-color: #d4d0c5 !important;
+  }
+
+  /* Input area */
+  .light .input-area {
+    background: #f8f6f1 !important;
+    border-color: #d4d0c5 !important;
+  }
+
+  textarea::placeholder {
+    color: #8c8779 !important;
+  }
+
+  /* Better contrast for text */
+  .light p, .light span, .light div {
+    color: #1f1c17;
+  }
+
+  .light .secondary-text {
+    color: #6b665c !important;
+  }
+
+  /* Settings panel light mode */
+  .light .settings-panel {
+    background: #f8f6f1 !important;
+    border-color: #d4d0c5 !important;
+  }
+
+  /* Buttons in light mode */
+  .light button {
+    color: #1a1714;
+  }
+`}</style>
 
       {/* Mobile overlay backdrop */}
       {sidebarOpen && (
@@ -1193,7 +1230,7 @@ textarea::placeholder { color: #888; }
         minWidth: sidebarOpen ? 260 : 0,
         overflow: "hidden",
         transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
-        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(228,228,222,0.99)",
+        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(244,242,235,0.98)",
         borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
         backdropFilter: "blur(20px)",
         display: "flex", flexDirection: "column",
@@ -1276,7 +1313,7 @@ textarea::placeholder { color: #888; }
         <div style={{
           display: "flex", alignItems: "center", gap: 14, padding: "14px 24px",
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)",
-          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(228,228,222,0.97)", backdropFilter: "blur(24px)",
+          background: isDark ? "rgba(11,11,14,0.92)" : "rgba(244,242,235,0.97)", backdropFilter: "blur(24px)",
           position: "sticky", top: 0, zIndex: 10
         }}>
           <button onClick={() => setSidebarOpen(v => !v)} style={{
@@ -1688,7 +1725,7 @@ textarea::placeholder { color: #888; }
           <div style={{ maxWidth: 860, margin: "0 auto" }}>
             <div style={{
               display: "flex", alignItems: "flex-end", gap: 12,
-              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(215,215,210,0.98)",
+              background: isDark ? "rgba(20,20,26,0.95)" : "rgba(248,246,241,0.98)",
               border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
               borderRadius: 18, padding: "10px 14px",
               backdropFilter: "blur(12px)",
