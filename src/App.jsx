@@ -1141,7 +1141,7 @@ export default function App() {
   return (
   <div style={{
     position: "fixed", inset: 0,
-    background: isDark ? "#0b0b0e" : "#f5f3eb",
+    background: isDark ? "#0b0b0e" : "#f0ede6",
     fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
     color: isDark ? "#e8e6e3" : "#1a1714", display: "flex", overflow: "hidden"
   }}>
@@ -1157,41 +1157,64 @@ export default function App() {
 
   * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
-  /* ==================== LIGHT MODE FIXES ==================== */
-  .light-mode-text { color: #1f1c17 !important; }
-  .light-mode-secondary { color: #6b665c !important; }
+  /* Material Symbols Fix */
+  .ms {
+    font-family: 'Material Symbols Rounded';
+    font-style: normal;
+    font-weight: normal;
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
 
-  /* Assistant Messages - Light Mode */
-  div[style*="background: rgba(218,218,213,0.95)"] {
+  /* ==================== LIGHT MODE FIXES ==================== */
+  body {
+    background: #f5f3eb;
+  }
+
+  /* Light Mode Backgrounds */
+  div[style*="background: #f5f3eb"],
+  div[style*="background: rgba(244,242,235"],
+  div[style*="background: rgba(248,246,241"] {
+    background: #f5f3eb !important;
+  }
+
+  /* Assistant Message - Light Mode */
+  div[style*="background: #f8f6f1"] {
     background: #f8f6f1 !important;
     border: 1px solid #d4d0c5 !important;
     color: #1f1c17 !important;
   }
 
-  /* Buttons in Light Mode */
+  /* Text Colors */
+  .light-mode-text, p, span, div, button {
+    color: #1f1c17;
+  }
+
+  /* Secondary Text */
+  .light-mode-secondary {
+    color: #6b665c !important;
+  }
+
+  /* Buttons */
   button {
     color: #1f1c17;
   }
 
-  /* Settings Tabs */
-  button[style*="color: #9ca3af"] {
-    color: #6b665c !important;
-  }
-
-  /* Sidebar Text */
-  .light-mode-sidebar * {
-    color: #1f1c17;
-  }
-
-  /* Input Placeholder */
   textarea::placeholder {
     color: #8c8779 !important;
   }
 
-  /* Topbar & Sidebar Light Mode */
-  div[style*="background: rgba(228,228,222,0.97)"],
-  div[style*="background: rgba(244,242,235,0.98)"] {
-    background: #f4f2eb !important;
+  /* Settings Panel */
+  div[style*="background: #f8f6f1"] {
+    background: #f8f6f1 !important;
   }
 `}</style>
       {/* Mobile overlay backdrop */}
