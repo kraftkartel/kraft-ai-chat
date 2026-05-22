@@ -160,7 +160,7 @@ function ImageBlock({ src, alt, isDark, accent }) {
   );
 }
 
-function StarCanvas({ responding, isDark }) {
+function StarCanvas({ responding, isDark, theme }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ responding: false });
 
@@ -210,14 +210,14 @@ function StarCanvas({ responding, isDark }) {
 
       // Ambient nebula glow
       const nebula = ctx.createRadialGradient(W*0.3, H*0.4, 0, W*0.3, H*0.4, W*0.5);
-      nebula.addColorStop(0, `rgba(108,71,255,${bright ? 0.04 : 0.018})`);
-      nebula.addColorStop(0.5, `rgba(60,40,180,${bright ? 0.02 : 0.008})`);
+      nebula.addColorStop(0, isDark ? `rgba(108,71,255,${bright ? 0.04 : 0.018})` : `rgba(200,220,255,${bright ? 0.12 : 0.06})`);
+      nebula.addColorStop(0.5, isDark ? `rgba(60,40,180,${bright ? 0.02 : 0.008})` : `rgba(180,210,255,${bright ? 0.06 : 0.03})`);
       nebula.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = nebula;
       ctx.fillRect(0, 0, W, H);
 
       const nebula2 = ctx.createRadialGradient(W*0.75, H*0.65, 0, W*0.75, H*0.65, W*0.4);
-      nebula2.addColorStop(0, `rgba(80,30,160,${bright ? 0.03 : 0.012})`);
+      nebula2.addColorStop(0, isDark ? `rgba(80,30,160,${bright ? 0.03 : 0.012})` : `rgba(160,200,255,${bright ? 0.08 : 0.03})`);
       nebula2.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = nebula2;
       ctx.fillRect(0, 0, W, H);
@@ -265,7 +265,7 @@ function StarCanvas({ responding, isDark }) {
         // Star glow for brighter stars
         if (s.r > 1.2) {
           const sg = ctx.createRadialGradient(rx, ry, 0, rx, ry, s.r * 3.5);
-          sg.addColorStop(0, isDark ? `rgba(200,190,255,${s.alpha * 0.4})` : `rgba(180,210,255,${s.alpha * 0.5})`);
+          sg.addColorStop(0, isDark ? `rgba(200,190,255,${s.alpha * 0.4})` : `rgba(255,255,255,${s.alpha * 0.9})`);
           sg.addColorStop(1, "rgba(0,0,0,0)");
           ctx.fillStyle = sg;
           ctx.beginPath();
@@ -275,11 +275,13 @@ function StarCanvas({ responding, isDark }) {
 
         ctx.beginPath();
         ctx.arc(rx, ry, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = isDark ? `rgba(235,225,255,${s.alpha})` : `rgba(200,220,255,${s.alpha})`;
+        ctx.fillStyle = isDark
+          ? `rgba(235,225,255,${s.alpha})`
+          : `rgba(255,255,255,${s.alpha * 1.4})`;
         ctx.fill();
 
-        s.x += s.vx + (isDark ? 0 : Math.sin(t + s.twinkleOffset) * 0.3);
-        s.y += s.vy + (isDark ? 0 : s.drift);
+        s.x += s.vx + (!isDark ? Math.sin(t * 0.5 + s.twinkleOffset) * 0.15 : 0);
+        s.y += s.vy + (!isDark ? s.drift * 2.5 : 0);
         if (s.x < 0) s.x = W; if (s.x > W) s.x = 0;
         if (s.y < 0) s.y = H; if (s.y > H) s.y = 0;
       });
@@ -345,12 +347,12 @@ function StarCanvas({ responding, isDark }) {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("resize", onResize);
     };
-  }, []);
+  }, [isDark]);
 
   return (
     <canvas ref={canvasRef} style={{
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-      zIndex: 0, pointerEvents: "none"
+      zIndex: 0, pointerEvents: "none", opacity: isDark ? 1 : 0.85
     }} />
   );
 }
@@ -1073,6 +1075,7 @@ export default function App() {
     background: rgba(108,71,255,0.75);
   }
 `}</style>
+      <StarCanvas responding={loading} isDark={isDark} theme={theme} />
       {/* Mobile overlay backdrop */}
       {sidebarOpen && (
         <div onClick={() => setSidebarOpen(false)} style={{
