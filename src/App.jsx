@@ -1162,7 +1162,7 @@ export default function App() {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 
-  /* ==================== DARK MODE BUTTONS ==================== */
+  /* DARK MODE BUTTONS */
   button {
     color: #e2e8f0 !important;
   }
@@ -1174,7 +1174,7 @@ export default function App() {
     color: #1f1c17 !important;
   }
 
-  /* ==================== SCROLLBAR (Thin & Adaptive) ==================== */
+  /* THIN ADAPTIVE SCROLLBAR */
   ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
@@ -1183,31 +1183,11 @@ export default function App() {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(108,71,255,0.35);
+    background: rgba(108,71,255,0.4);
     border-radius: 20px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(108,71,255,0.6);
-  }
-
-  /* Dark mode scrollbar */
-  [data-theme="dark"] ::-webkit-scrollbar-thumb,
-  body.dark ::-webkit-scrollbar-thumb {
-    background: rgba(108,71,255,0.45);
-  }
-  [data-theme="dark"] ::-webkit-scrollbar-thumb:hover,
-  body.dark ::-webkit-scrollbar-thumb:hover {
     background: rgba(108,71,255,0.75);
-  }
-
-  /* Light mode scrollbar */
-  [data-theme="light"] ::-webkit-scrollbar-thumb,
-  body.light ::-webkit-scrollbar-thumb {
-    background: rgba(108,71,255,0.5);
-  }
-  [data-theme="light"] ::-webkit-scrollbar-thumb:hover,
-  body.light ::-webkit-scrollbar-thumb:hover {
-    background: rgba(108,71,255,0.8);
   }
 `}</style>
       {/* Mobile overlay backdrop */}
@@ -1220,19 +1200,20 @@ export default function App() {
 
       {/* Sidebar */}
       <div style={{
-        <div style={{
+        
+
   width: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
   minWidth: sidebarOpen ? (window.innerWidth < 640 ? "100%" : 260) : 0,
-        overflow: "hidden",
-        transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
-        background: isDark ? "rgba(11,11,14,0.98)" : "rgba(244,242,235,0.98)",
-        borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
-        backdropFilter: "blur(20px)",
-        display: "flex", flexDirection: "column",
-        position: "relative",
-        height: "100vh",
-        zIndex: 4, flexShrink: 0
-      }}>
+  overflow: "hidden",
+  transition: "width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1)",
+  background: isDark ? "rgba(11,11,14,0.98)" : "rgba(244,242,235,0.98)",
+  borderRight: sidebarOpen ? (isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)") : "none",
+  backdropFilter: "blur(20px)",
+  display: "flex", flexDirection: "column",
+  position: "relative",
+  height: "100vh",
+  zIndex: 4, flexShrink: 0
+}}>
         <div style={{ padding: "18px 14px 12px", borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.07)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -1811,19 +1792,45 @@ export default function App() {
               >
                 {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
               </button>
-              <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) window.speechSynthesis.cancel(); }} title={voiceMode ? "Voice mode ON" : "Enable voice mode"} style={{
-  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-  background: voiceMode ? `${accent}35` : "rgba(108,71,255,0.12)",
-  border: voiceMode ? `1px solid ${accent}90` : "1px solid rgba(108,71,255,0.35)",
-  color: voiceMode ? accent : "#c4b5fd",
-  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-  transition: "all 0.2s",
-  boxShadow: voiceMode ? `0 0 16px ${accent}50` : "none"
-}}>
-  <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
-</button>
+                            <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: attachedImage ? "rgba(16,185,129,0.15)" : "rgba(108,71,255,0.12)",
+                border: attachedImage ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(108,71,255,0.35)",
+                color: attachedImage ? "#10b981" : "#c4b5fd",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
+              }}>📎</button>
+
+              <button
+                onClick={sendMessage}
+                disabled={loading || (!input.trim() && !attachedImage)}
+                style={{
+                  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                  background: loading || !input.trim()
+                    ? "rgba(108,71,255,0.12)"
+                    : `linear-gradient(135deg, ${accent}, ${accent}dd)`,
+                  border: "1px solid rgba(108,71,255,0.4)",
+                  color: loading || !input.trim() ? "#a78bfa" : "#fff",
+                  cursor: loading || !input.trim() ? "not-allowed" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 18, transition: "all 0.2s",
+                  boxShadow: loading || !input.trim() ? "none" : `0 0 20px ${accent}60`
+                }}
+              >
+                {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
+              </button>
+
+              <button onClick={() => { setVoiceMode(v => !v); if (voiceMode) window.speechSynthesis.cancel(); }} style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: voiceMode ? `${accent}35` : "rgba(108,71,255,0.12)",
+                border: voiceMode ? `1px solid ${accent}90` : "1px solid rgba(108,71,255,0.35)",
+                color: voiceMode ? accent : "#c4b5fd",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 0.2s",
+                boxShadow: voiceMode ? `0 0 16px ${accent}50` : "none"
+              }}>
                 <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
               </button>
+
               <MicButton onTranscript={t => { setInput(t); }} onAutoSend={t => { setInput(""); sendMessage(t); }} accent={accent} voiceSettings={voiceSettings} voiceMode={voiceMode} />
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "0 2px" }}>
