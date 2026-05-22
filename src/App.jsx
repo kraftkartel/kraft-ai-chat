@@ -363,22 +363,51 @@ function ThinkingDots({ accent }) {
   );
 }
 
-function Message({ msg, isNew, isDark, accent, isStreaming }) {
+function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSettings }) {
   const isUser = msg.role === "user";
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(!isStreaming);
+
+  const spokenUpTo = useRef(0);
 
   useEffect(() => {
     if (!isStreaming) { setDisplayed(msg.content); setDone(true); return; }
     setDisplayed("");
     setDone(false);
+    spokenUpTo.current = 0;
     let i = 0;
     const full = msg.content;
     const tick = () => {
       i += Math.floor(Math.random() * 4) + 2;
-      setDisplayed(full.slice(0, i));
+      const chunk = full.slice(0, i);
+      setDisplayed(chunk);
+
+      // Speak each completed sentence as it appears
+      if (isStreaming && voiceMode) {
+        const newText = full.slice(spokenUpTo.current, i);
+        const sentenceEnd = newText.search(/[.!?]\s/);
+        if (sentenceEnd !== -1) {
+          const sentence = newText.slice(0, sentenceEnd + 1).trim();
+          if (sentence.length > 10) {
+            _ttsQueue.chunks.push(sentence);
+            _runQueue(voiceSettings);
+            spokenUpTo.current += sentenceEnd + 1;
+          }
+        }
+      }
+
       if (i < full.length) requestAnimationFrame(tick);
-      else setDone(true);
+      else {
+        // Speak any remaining tail
+        if (isStreaming && voiceMode) {
+          const tail = full.slice(spokenUpTo.current).trim();
+          if (tail.length > 4) {
+            _ttsQueue.chunks.push(tail);
+            _runQueue(voiceSettings);
+          }
+        }
+        setDone(true);
+      }
     };
     requestAnimationFrame(tick);
   }, [msg.content, isStreaming]);
@@ -447,21 +476,19 @@ function Message({ msg, isNew, isDark, accent, isStreaming }) {
   );
 }
 
-function speakText(text, voiceSettings = {}) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+const _ttsQueue = { chunks: [], voice: null, settings: {}, running: false };
 
-  const clean = text
-    .replace(/```[\s\S]*?```/g, "code block.")
-    .replace(/`[^`]+`/g, "")
-    .replace(/\*\*(.*?)\*\*/g, "$1")
-    .replace(/#{1,3} /g, "")
-    .replace(/\n{2,}/g, ". ")
-    .replace(/\n/g, " ")
-    .trim();
+function _getVoice(gender) {
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.filter(v =>
+    gender === "female"
+      ? /zira|samantha|victoria|karen|moira|fiona|tessa|google uk english female|microsoft zira/i.test(v.name)
+      : /david|mark|daniel|alex|jorge|google uk english male|microsoft david/i.test(v.name)
+  );
+  return preferred[0] || voices.find(v => v.lang.startsWith("en")) || voices[0] || null;
+}
 
-  if (!clean) return;
-
+function _speakChunk(text, voiceSettings, onEnd) {
   const tonePresets = {
     natural:   { rate: 1,    pitch: 1 },
     calm:      { rate: 0.88, pitch: 0.9 },
@@ -470,36 +497,70 @@ function speakText(text, voiceSettings = {}) {
     whisper:   { rate: 0.82, pitch: 1.3 },
     assistant: { rate: 1.05, pitch: 1.05 },
   };
-
   const preset = tonePresets[voiceSettings.tone || "natural"];
-  const gender = voiceSettings.gender || "female";
+  const utt = new SpeechSynthesisUtterance(text);
+  const voice = _getVoice(voiceSettings.gender || "female");
+  if (voice) utt.voice = voice;
+  utt.rate  = (voiceSettings.rate  || 1) * preset.rate;
+  utt.pitch = (voiceSettings.pitch || 1) * preset.pitch;
+  utt.volume = 1;
+  utt.lang = "en-US";
+  utt.onend = onEnd;
+  utt.onerror = onEnd;
+  window.speechSynthesis.speak(utt);
 
-  const doSpeak = (voices) => {
-    const utt = new SpeechSynthesisUtterance(clean);
-    const preferred = voices.filter(v =>
-      gender === "female"
-        ? /female|zira|samantha|victoria|karen|moira|fiona|tessa|google uk english female|microsoft zira/i.test(v.name)
-        : /male|david|mark|daniel|alex|jorge|google uk english male|microsoft david/i.test(v.name)
-    );
-    if (preferred.length) utt.voice = preferred[0];
-    else if (voices.length) utt.voice = voices[0];
-    utt.rate = (voiceSettings.rate || 1) * preset.rate;
-    utt.pitch = (voiceSettings.pitch || 1) * preset.pitch;
-    utt.volume = 1;
-    utt.lang = "en-US";
-    window.speechSynthesis.speak(utt);
-  };
+  // Chrome bug: long utterances silently stall — keep-alive ping
+  const keepAlive = setInterval(() => {
+    if (!window.speechSynthesis.speaking) { clearInterval(keepAlive); return; }
+    window.speechSynthesis.pause();
+    window.speechSynthesis.resume();
+  }, 8000);
+  utt.onend = () => { clearInterval(keepAlive); if (onEnd) onEnd(); };
+  utt.onerror = () => { clearInterval(keepAlive); if (onEnd) onEnd(); };
+}
 
+function _runQueue(voiceSettings) {
+  if (_ttsQueue.running || _ttsQueue.chunks.length === 0) return;
+  _ttsQueue.running = true;
+  const chunk = _ttsQueue.chunks.shift();
+  _speakChunk(chunk, voiceSettings, () => {
+    _ttsQueue.running = false;
+    _runQueue(voiceSettings);
+  });
+}
+
+function speakText(text, voiceSettings = {}) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  _ttsQueue.chunks = [];
+  _ttsQueue.running = false;
+
+  const clean = text
+    .replace(/```[\s\S]*?```/g, "code block.")
+    .replace(/`[^`]+`/g, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/#{1,3} /g, "")
+    .replace(/\n{2,}/g, ". ")
+    .replace(/\n/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!clean) return;
+
+  // Split into natural sentence chunks so it starts speaking immediately
+  const sentences = clean.match(/[^.!?]+[.!?]+/g) || [clean];
+  _ttsQueue.chunks = sentences.map(s => s.trim()).filter(Boolean);
+
+  const go = () => _runQueue(voiceSettings);
   const voices = window.speechSynthesis.getVoices();
-  if (voices.length) {
-    doSpeak(voices);
-  } else {
-    window.speechSynthesis.onvoiceschanged = () => {
-      const v = window.speechSynthesis.getVoices();
-      if (v.length) doSpeak(v);
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }
+  if (voices.length) { go(); }
+  else { window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.onvoiceschanged = null; go(); }; }
+}
+
+function stopSpeaking() {
+  window.speechSynthesis.cancel();
+  _ttsQueue.chunks = [];
+  _ttsQueue.running = false;
 }
 
 function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode }) {
@@ -515,7 +576,7 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Speech recognition not supported in this browser."); return; }
     if (listening) { recRef.current?.stop(); setListening(false); return; }
-    if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+    stopSpeaking();
     const rec = new SR();
     recRef.current = rec;
     rec.lang = "en-US";
@@ -525,7 +586,8 @@ function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode 
     let silenceTimer = null;
 
     rec.onresult = e => {
-      if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+      // Interrupt AI speech immediately when user speaks
+      stopSpeaking();
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
@@ -1029,7 +1091,7 @@ textarea::placeholder { color: #888; }
           boxSizing: "border-box"
         }}>
           {activeChat?.messages.map((m, i) => (
-            <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} />
+            <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} voiceMode={voiceMode} voiceSettings={voiceSettings} />
           ))}
           {(isNewChat || showStarters) && (
             <div style={{ padding: "32px 0 8px", animation: "fadeIn 0.5s ease" }}>
