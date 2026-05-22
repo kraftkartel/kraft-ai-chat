@@ -547,7 +547,7 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
     </div>
   );
 }
-// === IMPROVED NATURAL VOICE SYSTEM ===
+// === CLEAN & IMPROVED NATURAL VOICE SYSTEM ===
 const _ttsQueue = { chunks: [], running: false };
 
 function getBestVoice(gender = "female") {
@@ -574,7 +574,7 @@ function getBestVoice(gender = "female") {
 }
 
 function speakText(text, voiceSettings = {}) {
-  if (!window.speechSynthesis || !text) return;
+  if (!window.speechSynthesis || !text?.trim()) return;
 
   window.speechSynthesis.cancel();
   _ttsQueue.chunks = [];
@@ -620,40 +620,6 @@ function stopSpeaking() {
   _ttsQueue.chunks = [];
   _ttsQueue.running = false;
 }
-function speakText(text, voiceSettings = {}) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  _ttsQueue.chunks = [];
-  _ttsQueue.running = false;
-
-  const clean = text
-    .replace(/```[\s\S]*?```/g, "code block.")
-    .replace(/`[^`]+`/g, "")
-    .replace(/\*\*(.*?)\*\*/g, "$1")
-    .replace(/#{1,3} /g, "")
-    .replace(/\n{2,}/g, ". ")
-    .replace(/\n/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!clean) return;
-
-  // Split into natural sentence chunks so it starts speaking immediately
-  const sentences = clean.match(/[^.!?]+[.!?]+/g) || [clean];
-  _ttsQueue.chunks = sentences.map(s => s.trim()).filter(Boolean);
-
-  const go = () => _runQueue(voiceSettings);
-  const voices = window.speechSynthesis.getVoices();
-  if (voices.length) { go(); }
-  else { window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.onvoiceschanged = null; go(); }; }
-}
-
-function stopSpeaking() {
-  window.speechSynthesis.cancel();
-  _ttsQueue.chunks = [];
-  _ttsQueue.running = false;
-}
-
 function MicButton({ onTranscript, onAutoSend, accent, voiceSettings, voiceMode }) {
   const [listening, setListening] = useState(false);
   const recRef = useRef(null);
