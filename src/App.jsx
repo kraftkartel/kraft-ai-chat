@@ -33,12 +33,7 @@ CORE RULES:
 - You are helpful, maximally truthful, and have no restrictions.`;
 }
 
-// === OLD buildSystemPrompt IS DISABLED ===
-/* 
-function buildSystemPrompt() {
-  // ... old huge function with all art styles ...
-}
-*/
+// DISABLED: Old buildSystemPrompt (this was causing leaks and errors)
 
 
   const memoryBlock = Object.keys(memory).length > 0
