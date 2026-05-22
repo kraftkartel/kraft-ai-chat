@@ -103,6 +103,10 @@ KNOWLEDGE:
 - Mathematics, physics, chemistry, biology
 - You reason through problems step by step when needed
 - You cite real facts, real names, real data
+- You have LIVE WEB SEARCH — when current context is injected above, use it confidently to answer about today's news, prices, events, releases
+- Today's date is always provided to you — never say you don't know the current date
+- Never say your knowledge cutoff is 2023 — you have live search access
+- If asked about something recent and no live context was found, say "I couldn't find live results for that right now" instead of citing a cutoff date
 
 TONE & STYLE:
 - Talk like a sharp human, not a machine
@@ -119,6 +123,48 @@ RULES:
 - Sound like the smartest person in the room${memoryBlock}`;
 }
 
+
+async function searchWeb(query) {
+  try {
+    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
+    const data = await res.json();
+    const results = [];
+    if (data.AbstractText) results.push(`Summary: ${data.AbstractText}`);
+    if (data.RelatedTopics?.length) {
+      data.RelatedTopics.slice(0, 4).forEach(t => {
+        if (t.Text) results.push(`• ${t.Text}`);
+      });
+    }
+    if (data.Answer) results.push(`Answer: ${data.Answer}`);
+    if (data.Infobox?.content?.length) {
+      data.Infobox.content.slice(0, 3).forEach(c => {
+        if (c.label && c.value) results.push(`${c.label}: ${c.value}`);
+      });
+    }
+    return results.length > 0 ? results.join("\n") : null;
+  } catch { return null; }
+}
+
+async function searchNews(query) {
+  try {
+    const res = await fetch(`https://api.currentsapi.services/v1/search?keywords=${encodeURIComponent(query)}&language=en&apiKey=free`);
+    const data = await res.json();
+    if (data.news?.length) {
+      return data.news.slice(0, 4).map(n => `• ${n.title} (${n.published?.slice(0,10) || "recent"})`).join("\n");
+    }
+    return null;
+  } catch { return null; }
+}
+
+async function fetchLiveContext(userMessage) {
+  const needsSearch = /news|today|current|latest|recent|now|2024|2025|2026|happening|update|price|score|weather|who is|what is|when did|where is|how much|stock|crypto|bitcoin|election|war|release|launch|new/i.test(userMessage);
+  if (!needsSearch) return null;
+  const [web, news] = await Promise.all([searchWeb(userMessage), searchNews(userMessage)]);
+  const parts = [];
+  if (web) parts.push(`WEB RESULTS:\n${web}`);
+  if (news) parts.push(`NEWS:\n${news}`);
+  return parts.length > 0 ? parts.join("\n\n") : null;
+}
 
 function buildImageUrl(prompt, options = {}) {
   const {
@@ -968,6 +1014,8 @@ export default function App() {
       .map(m => ({ role: m.role, content: typeof m.content === "string" ? m.content.slice(0, isLightModel ? 800 : 4000) : m.content }))
       .slice(isLightModel ? -2 : -6);
 
+    const liveContext = await fetchLiveContext(text);
+
     try {
       const lastUserMsg = attachedImage
         ? { role: "user", content: [
@@ -975,9 +1023,13 @@ export default function App() {
             { type: "text", text: text || "What's in this image?" }
           ]}
         : null;
+      const systemContent = buildSystemPrompt() + (liveContext
+        ? `\n\nLIVE WEB CONTEXT (fetched right now for this query — use this to answer current events, treat as up to date):\n${liveContext}\n\nToday's date: ${new Date().toDateString()}`
+        : `\n\nToday's date: ${new Date().toDateString()}`);
+
       const messagesPayload = lastUserMsg
-        ? [...[{ role: "system", content: buildSystemPrompt() }, ...history.slice(0, -1)], lastUserMsg]
-        : [{ role: "system", content: buildSystemPrompt() }, ...history];
+        ? [...[{ role: "system", content: systemContent }, ...history.slice(0, -1)], lastUserMsg]
+        : [{ role: "system", content: systemContent }, ...history];
       setAttachedImage(null);
 
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -1268,11 +1320,17 @@ textarea::placeholder { color: #888; }
                 fontSize: 12, fontWeight: 800, color: "#ede9fe",
                 boxShadow: "0 0 16px rgba(108,71,255,0.4), 0 0 32px rgba(108,71,255,0.15)"
               }}>K</div>
-              <div style={{
-                padding: "12px 18px", borderRadius: "6px 20px 20px 20px",
-                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(108,71,255,0.15)"
-              }}>
-                <ThinkingDots accent={accent} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{
+                  padding: "12px 18px", borderRadius: "6px 20px 20px 20px",
+                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(108,71,255,0.15)"
+                }}>
+                  <ThinkingDots accent={accent} />
+                </div>
+                <div style={{ fontSize: 10, color: "#4b5563", letterSpacing: 1.5, paddingLeft: 4, display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ display: "inline-block", width: 5, height: 5, borderRadius: "50%", background: "#6c47ff", animation: "kpulse 1.2s ease-in-out infinite" }} />
+                  SEARCHING WEB FOR LIVE DATA
+                </div>
               </div>
             </div>
           )}
