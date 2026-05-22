@@ -587,59 +587,79 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
     </div>
   );
 }
-const _ttsQueue = { chunks: [], voice: null, settings: {}, running: false };
+// === IMPROVED NATURAL VOICE SYSTEM ===
+const _ttsQueue = { chunks: [], running: false };
 
-function _getVoice(gender) {
+function getBestVoice(gender = "female") {
   const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.filter(v =>
-    gender === "female"
-      ? /zira|samantha|victoria|karen|moira|fiona|tessa|google uk english female|microsoft zira/i.test(v.name)
-      : /david|mark|daniel|alex|jorge|google uk english male|microsoft david/i.test(v.name)
-  );
-  return preferred[0] || voices.find(v => v.lang.startsWith("en")) || voices[0] || null;
+  
+  const femaleVoices = [
+    /samantha|victoria|karen|moira|fiona|tessa|olivia/i,
+    /google.*female|microsoft.*zira/i
+  ];
+  
+  const maleVoices = [
+    /daniel|david|mark|alex|jorge/i,
+    /google.*male/i
+  ];
+
+  const prefs = gender === "female" ? femaleVoices : maleVoices;
+
+  for (const regex of prefs) {
+    const voice = voices.find(v => regex.test(v.name));
+    if (voice) return voice;
+  }
+
+  return voices.find(v => v.lang.startsWith("en")) || voices[0];
 }
 
-function _speakChunk(text, voiceSettings, onEnd) {
-  const tonePresets = {
-    natural:   { rate: 1,    pitch: 1 },
-    calm:      { rate: 0.88, pitch: 0.9 },
-    energetic: { rate: 1.2,  pitch: 1.15 },
-    deep:      { rate: 0.9,  pitch: 0.65 },
-    whisper:   { rate: 0.82, pitch: 1.3 },
-    assistant: { rate: 1.05, pitch: 1.05 },
+function speakText(text, voiceSettings = {}) {
+  if (!window.speechSynthesis || !text) return;
+
+  window.speechSynthesis.cancel();
+  _ttsQueue.chunks = [];
+  _ttsQueue.running = false;
+
+  const clean = text
+    .replace(/```[\s\S]*?```/g, "Code block.")
+    .replace(/`[^`]+`/g, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/#{1,3} /g, "")
+    .replace(/\n{2,}/g, ". ")
+    .replace(/\n/g, " ")
+    .trim();
+
+  if (!clean) return;
+
+  const sentences = clean.match(/[^.!?]+[.!?]+/g) || [clean];
+  _ttsQueue.chunks = sentences.map(s => s.trim()).filter(Boolean);
+
+  const speakNext = () => {
+    if (_ttsQueue.chunks.length === 0) {
+      _ttsQueue.running = false;
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(_ttsQueue.chunks.shift());
+    const voice = getBestVoice(voiceSettings.gender || "female");
+    
+    if (voice) utterance.voice = voice;
+    utterance.rate = (voiceSettings.rate || 1) * 1.03;
+    utterance.pitch = voiceSettings.pitch || 1.05;
+    utterance.volume = 0.95;
+
+    utterance.onend = speakNext;
+    window.speechSynthesis.speak(utterance);
   };
-  const preset = tonePresets[voiceSettings.tone || "natural"];
-  const utt = new SpeechSynthesisUtterance(text);
-  const voice = _getVoice(voiceSettings.gender || "female");
-  if (voice) utt.voice = voice;
-  utt.rate  = (voiceSettings.rate  || 1) * preset.rate;
-  utt.pitch = (voiceSettings.pitch || 1) * preset.pitch;
-  utt.volume = 1;
-  utt.lang = "en-US";
-  utt.onend = onEnd;
-  utt.onerror = onEnd;
-  window.speechSynthesis.speak(utt);
 
-  // Chrome bug: long utterances silently stall — keep-alive ping
-  const keepAlive = setInterval(() => {
-    if (!window.speechSynthesis.speaking) { clearInterval(keepAlive); return; }
-    window.speechSynthesis.pause();
-    window.speechSynthesis.resume();
-  }, 8000);
-  utt.onend = () => { clearInterval(keepAlive); if (onEnd) onEnd(); };
-  utt.onerror = () => { clearInterval(keepAlive); if (onEnd) onEnd(); };
+  speakNext();
 }
 
-function _runQueue(voiceSettings) {
-  if (_ttsQueue.running || _ttsQueue.chunks.length === 0) return;
-  _ttsQueue.running = true;
-  const chunk = _ttsQueue.chunks.shift();
-  _speakChunk(chunk, voiceSettings, () => {
-    _ttsQueue.running = false;
-    _runQueue(voiceSettings);
-  });
+function stopSpeaking() {
+  window.speechSynthesis.cancel();
+  _ttsQueue.chunks = [];
+  _ttsQueue.running = false;
 }
-
 function speakText(text, voiceSettings = {}) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
