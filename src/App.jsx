@@ -572,6 +572,11 @@ export default function App() {
   useEffect(() => {
     const savedFont = localStorage.getItem("kraft_font");
     if (savedFont) document.body.style.fontFamily = savedFont;
+    // Pre-load voices so they're ready when needed
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+    }
   }, []);
 
   const activeChat = chats.find(c => c.id === activeChatId);
@@ -669,11 +674,15 @@ export default function App() {
       ));
       if (voiceMode) {
         const clean = aiContent.replace(/\*\*|`|#{1,3} /g, "").replace(/\n+/g, " ").trim();
-        speakText(clean, voiceSettings);
-      }
-      if (voiceMode) {
-        const clean = aiContent.replace(/\*\*|`|#{1,3} /g, "").replace(/\n+/g, " ").trim();
-        speakText(clean, voiceSettings);
+        const doSpeak = () => {
+          const voices = window.speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            window.speechSynthesis.onvoiceschanged = () => { speakText(clean, voiceSettings); };
+          } else {
+            speakText(clean, voiceSettings);
+          }
+        };
+        setTimeout(doSpeak, 100);
       }
       // // extractAndSaveMemory(text, aiContent);
     } catch (e) {
