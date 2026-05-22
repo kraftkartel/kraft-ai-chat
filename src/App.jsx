@@ -1151,57 +1151,49 @@ export default function App() {
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
 
-  @keyframes msgIn { 
-    from { opacity: 0; transform: translateY(20px) scale(0.95); } 
-    to { opacity: 1; transform: translateY(0) scale(1); } 
-  }
-  @keyframes kpulse { 
-    0%, 100% { opacity: 0.3; transform: scale(0.8); } 
-    50% { opacity: 1; transform: scale(1.25); } 
-  }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes kpulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.25); } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
-  /* Material Icons Fix */
   .ms {
     font-family: 'Material Symbols Rounded' !important;
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    font-size: 22px;
   }
 
-  /* ==================== DARK MODE IMPROVEMENTS ==================== */
+  /* ==================== DARK MODE BUTTON FIX ==================== */
   button {
-    color: #e2e8f0;
-  }
-
-  /* Better Dark Mode Buttons */
-  button[style*="color: #4b3a8a"], 
-  button[style*="color: #a78bfa"] {
-    color: #c4b5fd !important;
-  }
-
-  /* Assistant Messages Dark Mode */
-  div[style*="background: rgba(255,255,255,0.04)"] {
-    background: rgba(30, 30, 40, 0.95) !important;
-    border: 1px solid rgba(108,71,255,0.2) !important;
     color: #e2e8f0 !important;
   }
 
-  /* Light Mode */
-  div[style*="background: #f8f6f1"],
-  div[style*="background: rgba(248,246,241"] {
-    background: #f8f6f1 !important;
+  /* Fix low visibility buttons in dark mode */
+  button[style*="color: #4b3a8a"],
+  button[style*="color: #a78bfa"],
+  button[style*="color: #4b5563"] {
+    color: #c4b5fd !important;
+  }
+
+  /* Topbar buttons */
+  div[style*="background: rgba(11,11,14"] button {
+    color: #c4b5fd !important;
+  }
+
+  /* Input area buttons */
+  button[style*="background: rgba(108,71,255,0.08)"],
+  button[style*="background: rgba(20,20,26,0.95)"] button {
+    color: #c4b5fd !important;
+  }
+
+  /* Mic & Voice buttons */
+  button[style*="color: #4b3a8a"] {
+    color: #a78bfa !important;
+  }
+
+  /* Light mode remains clean */
+  div[style*="background: #f8f6f1"] button,
+  div[style*="background: rgba(248,246,241"] button {
     color: #1f1c17 !important;
-  }
-
-  textarea::placeholder {
-    color: #8c8779 !important;
-  }
-
-  /* Topbar & Sidebar */
-  div[style*="background: rgba(11,11,14"] {
-    background: rgba(15,15,20,0.98) !important;
   }
 `}</style>
       {/* Mobile overlay backdrop */}
@@ -1753,12 +1745,39 @@ export default function App() {
               />
             
               <button onClick={() => fileInputRef.current?.click()} title="Attach image" style={{
-                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                background: attachedImage ? "rgba(16,185,129,0.15)" : "rgba(108,71,255,0.08)",
-                border: attachedImage ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(108,71,255,0.2)",
-                color: attachedImage ? "#10b981" : "#4b3a8a",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
-              }}>📎</button>
+  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+  background: attachedImage ? "rgba(16,185,129,0.15)" : "rgba(108,71,255,0.12)",
+  border: attachedImage ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(108,71,255,0.35)",
+  color: attachedImage ? "#10b981" : "#c4b5fd",
+  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
+}}>📎</button>
+
+<button onClick={sendMessage} disabled={loading || (!input.trim() && !attachedImage)} style={{
+  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+  background: loading || !input.trim()
+    ? "rgba(108,71,255,0.12)"
+    : `linear-gradient(135deg, ${accent}, ${accent}dd)`,
+  border: "1px solid rgba(108,71,255,0.4)",
+  color: loading || !input.trim() ? "#a78bfa" : "#fff",
+  cursor: loading || !input.trim() ? "not-allowed" : "pointer",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  fontSize: 18, transition: "all 0.2s",
+  boxShadow: loading || !input.trim() ? "none" : `0 0 20px ${accent}60`
+}}>
+  {loading ? <span className="ms" style={{fontSize:18}}>hourglass_top</span> : <span className="ms" style={{fontSize:20}}>arrow_upward</span>}
+</button>
+
+<button onClick={() => { setVoiceMode(v => !v); if (voiceMode) window.speechSynthesis.cancel(); }} style={{
+  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+  background: voiceMode ? `${accent}35` : "rgba(108,71,255,0.12)",
+  border: voiceMode ? `1px solid ${accent}90` : "1px solid rgba(108,71,255,0.35)",
+  color: voiceMode ? accent : "#c4b5fd",
+  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+  transition: "all 0.2s",
+  boxShadow: voiceMode ? `0 0 16px ${accent}50` : "none"
+}}>
+  <span className="ms" style={{fontSize:20}}>{voiceMode ? "volume_up" : "volume_off"}</span>
+</button>
               <button
                 onClick={sendMessage}
                 disabled={loading || (!input.trim() && !attachedImage) || undefined}
