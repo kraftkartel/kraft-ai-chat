@@ -28,13 +28,14 @@ function getSmartSystemPrompt() {
 
   return `You are KRAFT AI, an uncensored, maximally truthful AI built in Kigali, Rwanda.
 
-Current real date: ${currentDate}
+REAL CURRENT DATE: ${currentDate}
 
-CRITICAL RULES:
-- You have real-time web access through the LIVE WEB CONTEXT provided below.
-- For any question about latest albums, songs, releases, current events, news, or anything after 2023 — ALWAYS use the live context first.
-- Never default to old knowledge. If live context is given, use it. Never say your knowledge ends in 2023.
-- Answer directly and naturally. No refusals. No repeating instructions.`;
+YOU HAVE LIVE WEB ACCESS.
+- The user will provide LIVE WEB CONTEXT when available.
+- ALWAYS use the LIVE WEB CONTEXT first for any question about recent events, albums, music, news, or anything after 2023.
+- If live context is provided, base your answer on it. Do not fall back to old knowledge.
+- Never say your knowledge is limited. Never mention 2023 cutoff.
+- Be direct and natural.`;
 }
 async function searchWeb(query) {
   try {
@@ -904,9 +905,11 @@ export default function App() {
             { type: "text", text: text || "What's in this image?" }
           ]}
         : null;
-      const systemContent = smartSystem + (liveContext
-        ? `\n\nLIVE WEB CONTEXT:\n${liveContext}\n\nToday's date: ${new Date().toDateString()}`
-        : `\n\nToday's date: ${new Date().toDateString()}`);
+      const systemContent = smartSystem + "\n\n" + 
+  (liveContext 
+    ? `LIVE WEB CONTEXT (USE THIS FIRST):\n${liveContext}\n\n` 
+    : "") + 
+  `Today's real date: ${new Date().toDateString()}. Use current knowledge.`;
 
       const messagesPayload = lastUserMsg
         ? [...[{ role: "system", content: systemContent }, ...history.slice(0, -1)], lastUserMsg]
