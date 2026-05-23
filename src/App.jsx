@@ -69,9 +69,10 @@ async function searchNews(query) {
 async function fetchLiveContext(userMessage) {
   const msg = userMessage.toLowerCase();
   
+  // Much broader trigger for current info
   const needsSearch = 
-    /news|today|current|latest|recent|now|202[4-6]|2025|2026|happening|update|price|cost|score|weather|who won|what happened|breaking|trending|stock|crypto|bitcoin|ethereum|election|war|release|launch|new version|how much is/i.test(msg) ||
-    (msg.length > 60 && /who|what|when|where|how|current|latest/i.test(msg));
+    /news|today|current|latest|recent|now|202[4-6]|this year|this month|album|discography|released|drop|new song|who won|what happened|price|cost|score|weather|breaking|trending/i.test(msg) ||
+    msg.length > 40;   // ← Trigger on most longer questions
 
   if (!needsSearch) return null;
 
