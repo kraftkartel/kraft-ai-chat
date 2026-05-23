@@ -103,17 +103,6 @@ async function fetchLiveContext(userMessage) {
   }
 }
 
-    let context = "";
-    if (webResults) context += `LIVE WEB RESULTS:\n${webResults}\n\n`;
-    if (newsResults) context += `LIVE NEWS:\n${newsResults}\n\n`;
-
-    return context.trim() || "No live results found.";
-  } catch (e) {
-    console.error("Live context failed:", e);
-    return "";
-  }
-}
-
 function buildImageUrl(prompt, options = {}) {
   const {
     width = 1024,
