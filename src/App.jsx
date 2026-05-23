@@ -611,6 +611,16 @@ function getBestVoice(gender = "female") {
   return voices.find(v => v.lang.startsWith("en")) || voices[0];
 }
 
+function speakText(text, settings = {}) {
+  stopSpeaking();
+  const clean = text.replace(/[#*`>_~]/g, "").slice(0, 1000);
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.voice = getBestVoice(settings.gender);
+  utter.rate = settings.rate || 1;
+  utter.pitch = settings.pitch || 1;
+  window.speechSynthesis.speak(utter);
+}
+
 function stopSpeaking() {
   window.speechSynthesis.cancel();
   _ttsQueue.chunks = [];
