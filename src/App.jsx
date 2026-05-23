@@ -30,12 +30,12 @@ function getSmartSystemPrompt() {
 
 REAL CURRENT DATE: ${currentDate}
 
-YOU HAVE REAL-TIME WEB ACCESS.
-- ALWAYS read and use the "LIVE WEB CONTEXT" section first when it is provided.
-- For any question about latest albums, new music, 2024, 2025, 2026 or recent events — base your answer ONLY on the live context.
-- NEVER say you have a knowledge cutoff. NEVER mention 2023.
-- If the live context doesn't have the answer, say you are checking current sources.
-- Be direct. Answer naturally.`;
+YOU HAVE LIVE WEB ACCESS.
+- The user will provide LIVE WEB CONTEXT when available.
+- ALWAYS use the LIVE WEB CONTEXT first for any question about recent events, albums, music, news, or anything after 2023.
+- If live context is provided, base your answer on it. Do not fall back to old knowledge.
+- Never say your knowledge is limited. Never mention 2023 cutoff.
+- Be direct and natural.`;
 }
 async function searchWeb(query) {
   try {
@@ -72,34 +72,29 @@ async function searchNews(query) {
 async function fetchLiveContext(userMessage) {
   const msg = userMessage.toLowerCase().trim();
   
+  // Extremely aggressive for music + current events
   const needsSearch = 
-    msg.length > 20 ||
-    /latest|new|recent|upcoming|202[4-6]|album|song|release|drop|drake|kendrick|future/i.test(msg);
+    msg.length > 25 ||
+    /latest|new|recent|current|today|202[4-6]|this year|this month|album|song|release|drop|drake|kendrick|earl sweatshirt|music|artist|who won|breaking|trending|now|price|cost/i.test(msg);
 
   if (!needsSearch) return "";
 
   try {
-    console.log("🔍 Live search for:", userMessage);
+    console.log("🔍 Searching live for:", userMessage); // for debugging
 
     const [webResults, newsResults] = await Promise.all([
-      searchWeb(userMessage).catch(() => null),
-      searchNews(userMessage).catch(() => null)
+      searchWeb(userMessage).catch(() => ""),
+      searchNews(userMessage).catch(() => "")
     ]);
 
-    let context = `REAL CURRENT DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n\n`;
-
+    let context = "";
     if (webResults) context += `LIVE WEB RESULTS:\n${webResults}\n\n`;
     if (newsResults) context += `LIVE NEWS:\n${newsResults}\n\n`;
 
-    if (!webResults && !newsResults) {
-      // Fallback direct search
-      context += "No strong recent results found from primary sources.";
-    }
-
-    return context;
+    return context.trim() || "No live results found.";
   } catch (e) {
     console.error("Live context failed:", e);
-    return "Live search encountered an error. Use latest available knowledge.";
+    return "";
   }
 }
 
@@ -910,9 +905,11 @@ export default function App() {
             { type: "text", text: text || "What's in this image?" }
           ]}
         : null;
-      const systemContent = smartSystem + 
-  (liveContext ? `\n\n=== LIVE WEB CONTEXT (CURRENT AS OF TODAY - USE THIS FIRST) ===\n${liveContext}\n=== END LIVE CONTEXT ===\n\n` : "") + 
-  `Current date: ${new Date().toDateString()}.`;
+      const systemContent = smartSystem + "\n\n" + 
+  (liveContext 
+    ? `LIVE WEB CONTEXT (USE THIS FIRST):\n${liveContext}\n\n` 
+    : "") + 
+  `Today's real date: ${new Date().toDateString()}. Use current knowledge.`;
 
       const messagesPayload = lastUserMsg
         ? [...[{ role: "system", content: systemContent }, ...history.slice(0, -1)], lastUserMsg]
