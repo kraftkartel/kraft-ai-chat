@@ -71,22 +71,24 @@ async function searchNews(query) {
 async function fetchLiveContext(userMessage) {
   const msg = userMessage.toLowerCase().trim();
   
-  // Extremely aggressive for music + current events
   const needsSearch = 
-    msg.length > 25 ||
-    /latest|new|recent|current|today|202[4-6]|this year|this month|album|song|release|drop|drake|kendrick|earl sweatshirt|music|artist|who won|breaking|trending|now|price|cost/i.test(msg);
+    msg.length > 15 ||
+    /drake|album|202[4-6]|latest|new|release/i.test(msg);
 
   if (!needsSearch) return "";
 
   try {
-    console.log("🔍 Searching live for:", userMessage); // for debugging
+    console.log("🔍 Live search for:", userMessage);
 
     const [webResults, newsResults] = await Promise.all([
-      searchWeb(userMessage).catch(() => ""),
-      searchNews(userMessage).catch(() => "")
+      searchWeb(userMessage).catch(() => null),
+      searchNews(userMessage).catch(() => null)
     ]);
 
-    let context = "";
+    let context = `REAL CURRENT DATE: ${new Date().toLocaleDateString('en-US', { 
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+    })}\n\n`;
+
     if (webResults) context += `LIVE WEB RESULTS:\n${webResults}\n\n`;
     if (newsResults) context += `LIVE NEWS:\n${newsResults}\n\n`;
 
