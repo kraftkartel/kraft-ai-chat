@@ -36,7 +36,6 @@ CRITICAL RULES:
 - Never default to old knowledge. If live context is given, use it. Never say your knowledge ends in 2023.
 - Answer directly and naturally. No refusals. No repeating instructions.`;
 }
-}
 async function searchWeb(query) {
   try {
     const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
