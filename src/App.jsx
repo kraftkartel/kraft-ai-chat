@@ -1536,47 +1536,69 @@ export default function App() {
 
             </div>{/* end Voice section */}
             <div className="settings-section" style={{ display: "none" }}>
-            {/* Clear memory */}
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>MEMORY</div>
-              {(() => {
-                const mem = (() => { try { return JSON.parse(localStorage.getItem("kraft_memory")) || {}; } catch { return {}; } })();
-                return Object.keys(mem).length > 0 ? (
-                  <div style={{ marginBottom: 10, padding: "10px 12px", borderRadius: 10, background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)", border: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)" }}>
-                    {Object.entries(mem).map(([k,v]) => (
-                      <div key={k} style={{ fontSize: 11, color: isDark ? "#94a3b8" : "#3a3530", marginBottom: 3 }}>
-                        <span style={{ color: isDark ? accent : "#3a1fa8", fontWeight: 600 }}>{k}:</span> {v}
-                      </div>
-                    ))}
-                  </div>
-                ) : <div style={{ fontSize: 11, color: isDark ? "#4b5563" : "#6b6560", marginBottom: 8 }}>No memory yet — start chatting.</div>;
-              })()}
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => {
-                  if (window.confirm("Clear all conversations?")) {
-                    localStorage.removeItem("kraft_chats");
-                    localStorage.removeItem("kraft_active_id");
-                    window.location.reload();
-                  }
-                }} style={{
-                  flex: 1, padding: "9px", borderRadius: 10, cursor: "pointer",
-                  background: "rgba(225,29,72,0.08)", border: "1px solid rgba(225,29,72,0.2)",
-                  color: "#e11d48", fontSize: 12, fontWeight: 600, fontFamily: "inherit"
-                }}>🗑 Chats</button>
-                <button onClick={() => {
-                  if (window.confirm("Clear AI memory about you?")) {
-                    localStorage.removeItem("kraft_memory");
-                    window.location.reload();
-                  }
-                }} style={{
-                  flex: 1, padding: "9px", borderRadius: 10, cursor: "pointer",
-                  background: "rgba(225,29,72,0.08)", border: "1px solid rgba(225,29,72,0.2)",
-                  color: "#e11d48", fontSize: 12, fontWeight: 600, fontFamily: "inherit"
-                }}>🧠 Memory</button>
-              </div>
-            </div>
+  <div style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700, marginBottom: 12 }}>LONG-TERM MEMORY</div>
+  
+  {/* Memory Content Preview */}
+  <div style={{ 
+    padding: "14px", 
+    background: isDark ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.06)", 
+    borderRadius: 12, 
+    border: `1px solid ${accent}30`,
+    marginBottom: 16,
+    maxHeight: "260px",
+    overflowY: "auto",
+    fontSize: 13.5,
+    lineHeight: 1.65,
+    whiteSpace: "pre-wrap"
+  }}>
+    {longTermMemory.knowledge ? 
+      longTermMemory.knowledge : 
+      "Your long-term memory is empty.\nStart chatting and KRAFT will automatically remember important things."}
+  </div>
 
-            </div>{/* end Memory section */}
+  <div style={{ fontSize: 11, color: isDark ? "#64748b" : "#6b7280", marginBottom: 12 }}>
+    Size: {(longTermMemory.knowledge.length / 1000).toFixed(1)} KB • Max ~45 KB
+  </div>
+
+  <div style={{ display: "flex", gap: 8 }}>
+    <button 
+      onClick={() => {
+        if (window.confirm("Clear ALL long-term memory?")) {
+          setLongTermMemory({ knowledge: "", lastUpdated: Date.now() });
+          localStorage.removeItem("kraft_longterm");
+        }
+      }}
+      style={{
+        flex: 1, 
+        padding: "10px", 
+        borderRadius: 10,
+        background: "rgba(225,29,72,0.12)", 
+        color: "#e11d48", 
+        border: "1px solid rgba(225,29,72,0.3)",
+        fontWeight: 600
+      }}
+    >
+      🗑 Clear Memory
+    </button>
+
+    <button 
+      onClick={() => {
+        alert(`Memory Size: ${(longTermMemory.knowledge.length / 1000).toFixed(1)} KB\n\nLast updated: ${new Date(longTermMemory.lastUpdated).toLocaleString()}`);
+      }}
+      style={{
+        flex: 1, 
+        padding: "10px", 
+        borderRadius: 10,
+        background: `${accent}20`, 
+        color: accent, 
+        border: `1px solid ${accent}40`,
+        fontWeight: 600
+      }}
+    >
+      📊 Memory Info
+    </button>
+  </div>
+</div>
             <div className="settings-section" style={{ display: "none" }}>
             {/* Model info */}
             <div style={{ paddingTop: 14, borderTop: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.06)" }}>
