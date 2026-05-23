@@ -30,12 +30,12 @@ function getSmartSystemPrompt() {
 
 REAL CURRENT DATE: ${currentDate}
 
-YOU HAVE LIVE WEB ACCESS.
-- The user will provide LIVE WEB CONTEXT when available.
-- ALWAYS use the LIVE WEB CONTEXT first for any question about recent events, albums, music, news, or anything after 2023.
-- If live context is provided, base your answer on it. Do not fall back to old knowledge.
-- Never say your knowledge is limited. Never mention 2023 cutoff.
-- Be direct and natural.`;
+YOU HAVE REAL-TIME WEB ACCESS.
+- ALWAYS read and use the "LIVE WEB CONTEXT" section first when it is provided.
+- For any question about latest albums, new music, 2024, 2025, 2026 or recent events — base your answer ONLY on the live context.
+- NEVER say you have a knowledge cutoff. NEVER mention 2023.
+- If the live context doesn't have the answer, say you are checking current sources.
+- Be direct. Answer naturally.`;
 }
 async function searchWeb(query) {
   try {
@@ -905,11 +905,12 @@ export default function App() {
             { type: "text", text: text || "What's in this image?" }
           ]}
         : null;
-      const systemContent = smartSystem + "\n\n" + 
+      const systemContent = smartSystem + 
   (liveContext 
-    ? `LIVE WEB CONTEXT (USE THIS FIRST):\n${liveContext}\n\n` 
+    ? `\n\nLIVE WEB CONTEXT (USE THIS AS PRIMARY KNOWLEDGE):\n${liveContext}\n\n` 
     : "") + 
-  `Today's real date: ${new Date().toDateString()}. Use current knowledge.`;
+  `Real current date: ${new Date().toDateString()}. 
+You must use the live context when available. Do not use old training data for recent events.`;
 
       const messagesPayload = lastUserMsg
         ? [...[{ role: "system", content: systemContent }, ...history.slice(0, -1)], lastUserMsg]
