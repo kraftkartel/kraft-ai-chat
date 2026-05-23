@@ -446,32 +446,22 @@ function inlineFormat(text) {
 }
 
 function ThinkingDots({ accent }) {
-  const [frame, setFrame] = useState(0);
-  const frames = ["THINKING", "READING", "CRAFTING"];
-  useEffect(() => {
-    const t = setInterval(() => setFrame(f => (f + 1) % frames.length), 1800);
-    return () => clearInterval(t);
-  }, []);
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 4px" }}>
-      <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 18 }}>
-        {[0, 1, 2, 3].map(i => (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 4px" }}>
+      <div style={{ display: "flex", gap: 5 }}>
+        {[0,1,2].map(i => (
           <div key={i} style={{
-            width: 3, borderRadius: 4,
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
             background: accent,
-            animation: `kbar 1.1s ease-in-out ${i * 0.15}s infinite`,
+            animation: `thinkingDot 1.4s ease-in-out ${i * 0.2}s infinite`
           }} />
         ))}
       </div>
-      <span style={{ fontSize: 11, color: accent, letterSpacing: 2.5, fontWeight: 600, opacity: 0.75, transition: "opacity 0.4s" }}>
-        {frames[frame]}
+      <span style={{ fontSize: 13, color: accent, fontWeight: 600, letterSpacing: 1.5 }}>
+        THINKING
       </span>
-      <style>{`
-        @keyframes kbar {
-          0%, 100% { height: 4px; opacity: 0.3; }
-          50% { height: 18px; opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }
@@ -552,18 +542,18 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
           {new Date(msg.ts || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </div>
         <div style={{
-          padding: "13px 18px",
+          padding: "14px 18px",
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
             ? isDark ? `${accent}25` : `${accent}12`
-            : isDark ? "rgba(35,35,45,0.95)" : "#f8f6f1",
+            : isDark ? "rgba(30,30,40,0.98)" : "#f8f6f1",
           border: isUser
-            ? `1px solid ${accent}40`
-            : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #d4d0c5",
-          color: isUser ? (isDark ? "#ddd6fe" : "#1a1714") : (isDark ? "#c9d1d9" : "#1f1c17"),
-          fontSize: 14.5, lineHeight: 1.75,
-          backdropFilter: "blur(8px)",
-          boxShadow: isUser ? `0 4px 24px ${accent}20` : "none"
+            ? `1px solid ${accent}50`
+            : isDark ? "1px solid rgba(108,71,255,0.15)" : "1px solid #d4d0c5",
+          color: isUser ? (isDark ? "#ddd6fe" : "#1a1714") : (isDark ? "#e2e8f0" : "#1f1c17"),
+          fontSize: 14.8, lineHeight: 1.75,
+          boxShadow: isUser ? `0 4px 24px ${accent}20` : "0 2px 12px rgba(0,0,0,0.1)",
+          position: "relative"
         }}>
           {isUser ? msg.content : renderMarkdown(content, isDark, accent)}
           {!done && <span style={{display:"inline-block",width:2,height:"1em",background:accent,marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
@@ -1060,6 +1050,10 @@ export default function App() {
   @keyframes msgIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
   @keyframes kpulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.25); } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes thinkingDot {
+    0%, 100% { transform: translateY(0); opacity: 0.4; }
+    50% { transform: translateY(-6px); opacity: 1; }
+  }
 
   * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
@@ -1204,6 +1198,23 @@ export default function App() {
           )}
 
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            {longTermMemory.knowledge.length > 100 && (
+              <div style={{
+                padding: "4px 10px",
+                borderRadius: 20,
+                background: `${accent}15`,
+                border: `1px solid ${accent}40`,
+                fontSize: 11,
+                color: accent,
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                fontWeight: 600
+              }}>
+                <span className="ms" style={{fontSize: 14}}>psychology</span>
+                MEMORY ACTIVE
+              </div>
+            )}
             <button onClick={() => {
               const next = model === "llama-3.3-70b-versatile" ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile";
               setModel(next);
