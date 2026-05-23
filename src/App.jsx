@@ -777,6 +777,15 @@ export default function App() {
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
   const [attachedImage, setAttachedImage] = useState(null);
+    // === LONG-TERM MEMORY (Safe & Smart) ===
+  const [longTermMemory, setLongTermMemory] = useState(() => {
+    try {
+      const saved = localStorage.getItem("kraft_longterm");
+      return saved ? JSON.parse(saved) : { knowledge: "", lastUpdated: Date.now() };
+    } catch {
+      return { knowledge: "", lastUpdated: Date.now() };
+    }
+  });
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -883,9 +892,20 @@ export default function App() {
       .map(m => ({ role: m.role, content: typeof m.content === "string" ? m.content.slice(0, isLightModel ? 800 : 4000) : m.content }))
       .slice(isLightModel ? -2 : -3);
 
-    const liveContext = await fetchLiveContext(text);
+        const liveContext = await fetchLiveContext(text);
     const smartTokens = getSmartTokenLimit(text);
     const smartSystem = getSmartSystemPrompt(text);
+
+    // === SMART MEMORY (Low Token Usage) ===
+    let memoryContext = "";
+    if (longTermMemory.knowledge && longTermMemory.knowledge.length > 40) {
+      const needsMemory = /remember|earlier|last time|before|my project|about me|what did i|in 202|previous|history/i.test(text.toLowerCase());
+      if (needsMemory) {
+        memoryContext = `\n\n=== LONG-TERM MEMORY (USE IF RELEVANT) ===\n${longTermMemory.knowledge.slice(0, 3500)}`;
+      } else {
+        memoryContext = `\n\nYou have long-term memory of the user.`;
+      }
+    }
 
     try {
       const lastUserMsg = attachedImage
@@ -894,7 +914,7 @@ export default function App() {
             { type: "text", text: text || "What's in this image?" }
           ]}
         : null;
-      const systemContent = smartSystem + (liveContext
+            const systemContent = smartSystem + memoryContext + (liveContext
         ? `\n\nLIVE WEB CONTEXT:\n${liveContext}\n\nToday's date: ${new Date().toDateString()}`
         : `\n\nToday's date: ${new Date().toDateString()}`);
 
@@ -931,10 +951,55 @@ export default function App() {
         const restore = () => { document.title = orig; window.removeEventListener("focus", restore); };
         window.addEventListener("focus", restore);
       }
-      if (voiceMode) {
+            if (voiceMode) {
         speakText(aiContent, voiceSettings);
       }
-      // // extractAndSaveMemory(text, aiContent);
+      saveToMemory(text, aiContent);
+  }
+
+  async function saveToMemory(userText, aiText) {
+    if (!userText || userText.length < 25) return;
+
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_KEY}`
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          max_tokens: 200,
+          temperature: 0.2,
+          messages: [{
+            role: "system",
+            content: "Extract only useful long-term facts, user info, projects, and events. Return clean short text."
+          }, {
+            role: "user",
+            content: `User: ${userText}\n\nKRAFT: ${aiText}`
+          }]
+        })
+      });
+
+      const data = await res.json();
+      const newInfo = data.choices?.[0]?.message?.content?.trim() || "";
+
+      if (newInfo.length < 15) return;
+
+      setLongTermMemory(prev => {
+        let newKnowledge = (prev.knowledge + "\n\n" + newInfo).trim();
+        if (newKnowledge.length > 45000) newKnowledge = newKnowledge.slice(-38000); // Keep recent
+
+        const updated = { knowledge: newKnowledge, lastUpdated: Date.now() };
+        localStorage.setItem("kraft_longterm", JSON.stringify(updated));
+        return updated;
+      });
+    } catch (e) {
+      console.log("Memory save skipped");
+    }
+  }
+
+  // // extractAndSaveMemory(text, aiContent);
     } catch (e) {
       setChats(prev => prev.map(c => c.id === activeChatId
         ? { ...c, messages: [...updatedMessages, { role: "assistant", content: `**Error:** ${e.message}` }] }
