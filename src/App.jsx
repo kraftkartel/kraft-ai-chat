@@ -909,10 +909,21 @@ export default function App() {
 
     try {
       const lastUserMsg = attachedImage
-        ? { role: "user", content: [
-            { type: "image_url", image_url: { url: `data:${attachedImage.mime};base64,${attachedImage.base64}` } },
-            { type: "text", text: text || "What's in this image?" }
-          ]}
+        ? { 
+            role: "user", 
+            content: [
+              { 
+                type: "image_url", 
+                image_url: { 
+                  url: `data:${attachedImage.mime};base64,${attachedImage.base64}` 
+                } 
+              },
+              { 
+                type: "text", 
+                text: text || "Describe this image in detail and tell me how I can edit or improve it." 
+              }
+            ]
+          }
         : null;
             const systemContent = smartSystem + memoryContext + (liveContext
         ? `\n\nLIVE WEB CONTEXT:\n${liveContext}\n\nToday's date: ${new Date().toDateString()}`
