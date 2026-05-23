@@ -965,6 +965,14 @@ export default function App() {
         speakText(aiContent, voiceSettings);
       }
       saveToMemory(text, aiContent);
+
+    } catch (e) {
+      setChats(prev => prev.map(c => c.id === activeChatId
+        ? { ...c, messages: [...updatedMessages, { role: "assistant", content: `**Error:** ${e.message}` }] }
+        : c
+      ));
+    }
+    setLoading(false);
   }
 
   async function saveToMemory(userText, aiText) {
@@ -998,8 +1006,7 @@ export default function App() {
 
       setLongTermMemory(prev => {
         let newKnowledge = (prev.knowledge + "\n\n" + newInfo).trim();
-        if (newKnowledge.length > 45000) newKnowledge = newKnowledge.slice(-38000); // Keep recent
-
+        if (newKnowledge.length > 45000) newKnowledge = newKnowledge.slice(-38000);
         const updated = { knowledge: newKnowledge, lastUpdated: Date.now() };
         localStorage.setItem("kraft_longterm", JSON.stringify(updated));
         return updated;
@@ -1007,16 +1014,6 @@ export default function App() {
     } catch (e) {
       console.log("Memory save skipped");
     }
-  }
-
-  // // extractAndSaveMemory(text, aiContent);
-    } catch (e) {
-      setChats(prev => prev.map(c => c.id === activeChatId
-        ? { ...c, messages: [...updatedMessages, { role: "assistant", content: `**Error:** ${e.message}` }] }
-        : c
-      ));
-    }
-    setLoading(false);
   }
 
   async function extractAndSaveMemory(userText, aiText) {
