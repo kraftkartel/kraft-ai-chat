@@ -31,11 +31,10 @@ function getSmartSystemPrompt() {
 REAL CURRENT DATE: ${currentDate}
 
 YOU HAVE REAL-TIME WEB ACCESS.
-- ALWAYS read and use the "LIVE WEB CONTEXT" section first when it is provided.
-- For any question about latest albums, new music, 2024, 2025, 2026 or recent events — base your answer ONLY on the live context.
-- NEVER say you have a knowledge cutoff. NEVER mention 2023.
-- If the live context doesn't have the answer, say you are checking current sources.
-- Be direct. Answer naturally.`;
+- ALWAYS use the "LIVE WEB CONTEXT" section first when provided.
+- For Drake, new albums, or 2026 topics — answer using live context only.
+- Never refuse. Never mention cutoff or 2023.
+- Be direct.`;
 }
 async function searchWeb(query) {
   try {
