@@ -481,47 +481,40 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(!isStreaming);
 
-  const spokenUpTo = useRef(0);
-
   useEffect(() => {
-    if (!isStreaming) { setDisplayed(msg.content); setDone(true); return; }
+    if (!isStreaming) { 
+      setDisplayed(msg.content); 
+      setDone(true); 
+      return; 
+    }
+
     setDisplayed("");
     setDone(false);
-    spokenUpTo.current = 0;
+
     let i = 0;
     const full = msg.content;
+
     const tick = () => {
       i += Math.floor(Math.random() * 4) + 2;
       const chunk = full.slice(0, i);
       setDisplayed(chunk);
 
-      if (isStreaming && voiceMode) {
-        const newText = full.slice(spokenUpTo.current, i);
-        const sentenceEnd = newText.search(/[.!?]\s/);
-        if (sentenceEnd !== -1) {
-          const sentence = newText.slice(0, sentenceEnd + 1).trim();
-          if (sentence.length > 10) {
-            _ttsQueue.chunks.push(sentence);
-            _runQueue(voiceSettings);
-            spokenUpTo.current += sentenceEnd + 1;
-          }
-        }
-      }
-
-      if (i < full.length) requestAnimationFrame(tick);
-      else {
-        if (isStreaming && voiceMode) {
-          const tail = full.slice(spokenUpTo.current).trim();
-          if (tail.length > 4) {
-            _ttsQueue.chunks.push(tail);
-            _runQueue(voiceSettings);
-          }
-        }
+      if (i < full.length) {
+        requestAnimationFrame(tick);
+      } else {
         setDone(true);
       }
     };
+
     requestAnimationFrame(tick);
   }, [msg.content, isStreaming]);
+
+  // Speak full response when streaming is done
+  useEffect(() => {
+    if (done && !isUser && voiceMode && msg.content) {
+      speakText(msg.content, voiceSettings);
+    }
+  }, [done, isUser, voiceMode, msg.content, voiceSettings]);
 
   const content = isUser ? msg.content : displayed;
 
@@ -562,8 +555,8 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
           padding: "13px 18px",
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
           background: isUser
-  ? isDark ? `${accent}25` : `${accent}12`
-  : isDark ? "rgba(35,35,45,0.95)" : "#f8f6f1",
+            ? isDark ? `${accent}25` : `${accent}12`
+            : isDark ? "rgba(35,35,45,0.95)" : "#f8f6f1",
           border: isUser
             ? `1px solid ${accent}40`
             : isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #d4d0c5",
