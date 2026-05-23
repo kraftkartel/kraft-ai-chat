@@ -922,11 +922,8 @@ export default function App() {
           ]}
         : null;
       const systemContent = smartSystem + 
-  (liveContext 
-    ? `\n\nLIVE WEB CONTEXT (USE THIS AS PRIMARY KNOWLEDGE):\n${liveContext}\n\n` 
-    : "") + 
-  `Real current date: ${new Date().toDateString()}. 
-You must use the live context when available. Do not use old training data for recent events.`;
+  (liveContext ? `\n\n=== LIVE WEB CONTEXT (CURRENT AS OF TODAY - USE THIS FIRST) ===\n${liveContext}\n=== END LIVE CONTEXT ===\n\n` : "") + 
+  `Current date: ${new Date().toDateString()}.`;
 
       const messagesPayload = lastUserMsg
         ? [...[{ role: "system", content: systemContent }, ...history.slice(0, -1)], lastUserMsg]
