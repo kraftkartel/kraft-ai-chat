@@ -990,10 +990,13 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
         : [{ role: "system", content: systemContent }, ...history];
       setAttachedImage(null);
 
-      // === SMART DUAL-API SYSTEM (Fixed) ===
+            // === SMART DUAL-API SYSTEM ===
       const isSensitive = /credit|card|loan|bank|finance|debt|score|scam|money|investment|make money/i.test(text);
       
       const useOpenRouter = provider === "openrouter" || isSensitive;
+
+      console.log("🔄 Using Provider:", useOpenRouter ? "OpenRouter" : "Groq");
+      console.log("OR_KEY Loaded?", !!OR_KEY);
 
       const response = await fetch(
         useOpenRouter 
@@ -1005,14 +1008,14 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
             "Content-Type": "application/json",
             "Authorization": `Bearer ${useOpenRouter ? OR_KEY : GROQ_KEY}`,
             ...(useOpenRouter && { 
-              "HTTP-Referer": window.location.origin,
+              "HTTP-Referer": "https://kraft-ai.vercel.app",   // Change to your actual domain
               "X-Title": "KRAFT AI" 
             })
           },
           body: JSON.stringify({
-            model: attachedImage
-              ? (useOpenRouter ? "meta-llama/llama-4-scout" : "meta-llama/llama-4-scout-17b-16e-instruct")
-              : (useOpenRouter ? "cognitivecomputations/dolphin-mistral-24b-venice-edition:free" : model),
+            model: useOpenRouter 
+              ? "cognitivecomputations/dolphin-mistral-24b-venice-edition:free" 
+              : (attachedImage ? "meta-llama/llama-4-scout-17b-16e-instruct" : model),
             max_tokens: smartTokens,
             messages: messagesPayload,
             temperature: 0.75
