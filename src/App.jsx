@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
+const OR_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 
 function getSmartTokenLimit(text) {
   const t = text.trim();
