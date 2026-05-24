@@ -990,10 +990,11 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
         : [{ role: "system", content: systemContent }, ...history];
       setAttachedImage(null);
 
-      // === SMART DUAL-API SYSTEM ===
+      // === SMART DUAL-API SYSTEM (Fixed) ===
       const isSensitive = /credit|card|loan|bank|finance|debt|score|scam|money|investment|make money/i.test(text);
       
       const useOpenRouter = provider === "openrouter" || isSensitive;
+
       const response = await fetch(
         useOpenRouter 
           ? "https://openrouter.ai/api/v1/chat/completions" 
@@ -1011,7 +1012,7 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
           body: JSON.stringify({
             model: attachedImage
               ? (useOpenRouter ? "meta-llama/llama-4-scout" : "meta-llama/llama-4-scout-17b-16e-instruct")
-              : (useOpenRouter ? "cognitivecomputations/dolphin-3.0-llama-3.1-70b" : model),
+              : (useOpenRouter ? "cognitivecomputations/dolphin-mistral-24b-venice-edition:free" : model),
             max_tokens: smartTokens,
             messages: messagesPayload,
             temperature: 0.75
