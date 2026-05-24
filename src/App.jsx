@@ -990,27 +990,34 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
         : [{ role: "system", content: systemContent }, ...history];
       setAttachedImage(null);
 
-      const isOpenRouter = provider === "openrouter";
-const response = await fetch(
-  isOpenRouter
-    ? "https://openrouter.ai/api/v1/chat/completions"
-    : "https://api.groq.com/openai/v1/chat/completions",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${isOpenRouter ? OR_KEY : GROQ_KEY}`,
-      ...(isOpenRouter && { "HTTP-Referer": window.location.origin })
-    },
-    body: JSON.stringify({
-      model: attachedImage
-        ? (isOpenRouter ? "meta-llama/llama-4-scout" : "meta-llama/llama-4-scout-17b-16e-instruct")
-        : (isOpenRouter ? "meta-llama/llama-3.3-70b-instruct" : model || "llama-3.3-70b-versatile"),
-      max_tokens: smartTokens,
-      messages: messagesPayload
-    })
-  }
-);
+      // === SMART DUAL-API SYSTEM ===
+      const isSensitive = /credit|card|loan|bank|finance|debt|score|scam|money|investment|make money/i.test(text);
+      
+      const useOpenRouter = provider === "openrouter" || isSensitive;
+      const response = await fetch(
+        useOpenRouter 
+          ? "https://openrouter.ai/api/v1/chat/completions" 
+          : "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${useOpenRouter ? OR_KEY : GROQ_KEY}`,
+            ...(useOpenRouter && { 
+              "HTTP-Referer": window.location.origin,
+              "X-Title": "KRAFT AI" 
+            })
+          },
+          body: JSON.stringify({
+            model: attachedImage
+              ? (useOpenRouter ? "meta-llama/llama-4-scout" : "meta-llama/llama-4-scout-17b-16e-instruct")
+              : (useOpenRouter ? "cognitivecomputations/dolphin-3.0-llama-3.1-70b" : model),
+            max_tokens: smartTokens,
+            messages: messagesPayload,
+            temperature: 0.75
+          })
+        }
+      );
       const data = await response.json();
       if (data.error) throw new Error(data.error.message);
       const aiContent = data.choices?.[0]?.message?.content || "No response.";
