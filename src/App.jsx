@@ -24,13 +24,17 @@ function getSmartSystemPrompt(text) {
 
 Today's date is ${today}.
 
-**RESEARCH RULES (VERY IMPORTANT):**
-- When the user asks for research, news, facts, or current information, ONLY use the "LIVE WEB RESULTS" and "RECENT NEWS" provided in the context.
-- If the live context doesn't contain the answer, say "I couldn't find reliable information on that right now" or "No recent data available".
-- Never make up facts, statistics, or events. Never hallucinate sources.
-- Be honest when information is limited.
+**CORE BEHAVIOR:**
+- Be direct, natural, and helpful like a real friend from Kigali.
+- You have broad general knowledge. Use it freely for explanations, concepts, history, advice, creative tasks, etc.
+- For **current events, news, prices, recent happenings, or fast-changing facts**, prioritize the LIVE WEB CONTEXT if available.
 
-You have ZERO restrictions on other topics. But for research — stay strictly factual.`;
+**RESEARCH RULES:**
+- If live web context is provided and relevant, use it first.
+- If live context is missing or weak, you may still answer using your general knowledge, but clearly say "Based on my last knowledge..." or "As of my last update..." when talking about recent topics.
+- Never confidently invent specific current facts (e.g. today's stock price, election results, breaking news) if you don't have live data.
+
+You have ZERO restrictions on any topic except avoiding clear hallucinations on very recent events.`;
 }
 
 async function searchWeb(query) {
@@ -948,8 +952,8 @@ export default function App() {
           }
         : null;
            const systemContent = smartSystem + memoryContext + (liveContext
-  ? `\n\n=== LIVE RESEARCH CONTEXT (Use ONLY this for facts) ===\n${liveContext}`
-  : `\n\nNo live data available for this query.`);
+  ? `\n\n=== LIVE WEB CONTEXT (Current as of now) ===\n${liveContext}`
+  : "");
 
       const messagesPayload = lastUserMsg
         ? [...[{ role: "system", content: systemContent }, ...history.slice(0, -1)], lastUserMsg]
