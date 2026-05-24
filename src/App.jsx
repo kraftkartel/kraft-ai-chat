@@ -957,8 +957,8 @@ export default function App() {
   },
   body: JSON.stringify({
     model: attachedImage 
-      ? "meta-llama/llama-4-scout-17b-16e-instruct"   // ← Updated
-      : model,
+  ? "meta-llama/llama-4-scout-17b-16e-instruct" 
+  : model || "llama-3.3-70b-versatile",
     max_tokens: smartTokens,
     messages: messagesPayload
   })
