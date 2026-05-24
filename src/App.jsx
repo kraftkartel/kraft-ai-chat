@@ -909,22 +909,20 @@ export default function App() {
 
     try {
       const lastUserMsg = attachedImage
-        ? { 
-            role: "user", 
-            content: [
-              { 
-                type: "image_url", 
-                image_url: { 
-                  url: `data:${attachedImage.mime};base64,${attachedImage.base64}` 
-                } 
-              },
-              { 
-                type: "text", 
-                text: text || "Describe this image in detail and tell me how I can edit or improve it." 
-              }
-            ]
-          }
-        : null;
+  ? { 
+      role: "user", 
+      content: [
+        { 
+          type: "image_url", 
+          image_url: { url: `data:${attachedImage.mime};base64,${attachedImage.base64}` } 
+        },
+        { 
+          type: "text", 
+          text: text || "Analyze this image in detail. Describe what you see clearly." 
+        }
+      ]
+    }
+  : null;
             const systemContent = smartSystem + memoryContext + (liveContext
         ? `\n\nLIVE WEB CONTEXT:\n${liveContext}\n\nToday's date: ${new Date().toDateString()}`
         : `\n\nToday's date: ${new Date().toDateString()}`);
@@ -941,7 +939,7 @@ export default function App() {
           "Authorization": `Bearer ${GROQ_KEY}`
         },
         body: JSON.stringify({
-          model: attachedImage ? "llama-3.2-11b-vision-preview" : model,
+          model: attachedImage ? "meta-llama/llama-4-scout-17b-16e-instruct" : model,
           max_tokens: smartTokens,
           messages: messagesPayload
         })
