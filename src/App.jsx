@@ -950,19 +950,19 @@ export default function App() {
       setAttachedImage(null);
 
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${GROQ_KEY}`
-        },
-        body: JSON.stringify({
-          model: attachedImage 
-  ? "meta-llama/llama-4-scout-17b-16e-instruct" 
-  : model,
-          max_tokens: smartTokens,
-          messages: messagesPayload
-        })
-      });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${GROQ_KEY}`
+  },
+  body: JSON.stringify({
+    model: attachedImage 
+      ? "meta-llama/llama-4-scout-17b-16e-instruct"   // ← Updated
+      : model,
+    max_tokens: smartTokens,
+    messages: messagesPayload
+  })
+});
       const data = await response.json();
       if (data.error) throw new Error(data.error.message);
       const aiContent = data.choices?.[0]?.message?.content || "No response.";
