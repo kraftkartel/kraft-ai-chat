@@ -1013,9 +1013,9 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
             })
           },
           body: JSON.stringify({
-                              model: useOpenRouter 
-              ? "google/gemma-3-4b-it:free"
-              : (attachedImage ? "meta-llama/llama-4-scout-17b-16e-instruct" : model),
+                   model: useOpenRouter 
+  ? "mistralai/mistral-7b-instruct:free"
+  : (attachedImage ? "meta-llama/llama-4-scout-17b-16e-instruct" : model),
             max_tokens: smartTokens,
             messages: messagesPayload,
             temperature: 0.75
