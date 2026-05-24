@@ -555,6 +555,38 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
           </div>
         )}
 
+        {/* User Image Preview */}
+        {isUser && attachedImageForThisMsg && (
+          <div style={{ marginBottom: 8, maxWidth: "280px", alignSelf: "flex-end" }}>
+            <img 
+              src={`data:${attachedImageForThisMsg.mime};base64,${attachedImageForThisMsg.base64}`} 
+              alt="Attached" 
+              style={{ 
+                maxWidth: "100%", 
+                borderRadius: "16px 16px 4px 16px",
+                border: `2px solid ${accent}50`,
+                boxShadow: `0 6px 20px ${accent}20`
+              }} 
+            />
+          </div>
+        )}
+
+        {/* User Image Preview */}
+        {isUser && attachedImageForThisMsg && (
+          <div style={{ marginBottom: 8, maxWidth: "280px", alignSelf: "flex-end" }}>
+            <img 
+              src={`data:${attachedImageForThisMsg.mime};base64,${attachedImageForThisMsg.base64}`} 
+              alt="Attached" 
+              style={{ 
+                maxWidth: "100%", 
+                borderRadius: "16px 16px 4px 16px",
+                border: `2px solid ${accent}50`,
+                boxShadow: `0 6px 20px ${accent}20`
+              }} 
+            />
+          </div>
+        )}
+
         {/* Message Bubble */}
         <div style={{
           padding: "14px 18px",
@@ -1284,17 +1316,7 @@ export default function App() {
           boxSizing: "border-box", minWidth: 0
         }}>
           {activeChat?.messages.map((m, i) => (
-            <Message 
-              key={m._key || i} 
-              msg={m} 
-              isNew={m._key === newMsgId} 
-              isDark={isDark} 
-              accent={accent} 
-              isStreaming={m._key === newMsgId && m.role === "assistant"} 
-              voiceMode={voiceMode} 
-              voiceSettings={voiceSettings}
-              attachedImageForThisMsg={m.role === "user" && m._attachedImage ? m._attachedImage : null}
-            />
+            <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} voiceMode={voiceMode} voiceSettings={voiceSettings} attachedImageForThisMsg={m.role === "user" && m._attachedImage ? m._attachedImage : null} />
           ))}
           {(isNewChat || showStarters) && (
             <div style={{ padding: "32px 0 8px", animation: "fadeIn 0.5s ease" }}>
