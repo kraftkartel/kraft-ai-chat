@@ -1325,6 +1325,27 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
               color: isDark ? "#a78bfa" : "#1a1714", fontSize: 16,
               display: "flex", alignItems: "center", justifyContent: "center"
             }}><span className="ms" style={{fontSize:18}}>{isDark ? "light_mode" : "dark_mode"}</span></button>
+            {/* Provider Switcher */}
+            <button 
+              onClick={() => {
+                const newProvider = provider === "groq" ? "openrouter" : "groq";
+                setProvider(newProvider);
+                localStorage.setItem("kraft_provider", newProvider);
+              }} 
+              title={`Current: ${provider.toUpperCase()} • Click to switch`}
+              style={{
+                height: 34, padding: "0 12px", borderRadius: 8, cursor: "pointer",
+                background: provider === "openrouter" ? "#10b98120" : "#6c47ff20",
+                border: provider === "openrouter" ? "1px solid #10b981" : "1px solid #6c47ff",
+                color: provider === "openrouter" ? "#10b981" : "#a78bfa",
+                fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 6
+              }}
+            >
+              <span className="ms" style={{fontSize:16}}>
+                {provider === "groq" ? "bolt" : "shield"}
+              </span>
+              {provider === "groq" ? "GROQ" : "OPENROUTER"}
+            </button>
             <button onClick={() => setShowSettings(v => !v)} title="Settings" style={{
               width: 34, height: 34, borderRadius: 8, cursor: "pointer",
               background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
