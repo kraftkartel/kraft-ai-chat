@@ -990,13 +990,14 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
         : [{ role: "system", content: systemContent }, ...history];
       setAttachedImage(null);
 
-            // === SMART DUAL-API SYSTEM ===
+                  // === SMART DUAL-API SYSTEM (Improved) ===
       const isSensitive = /credit|card|loan|bank|finance|debt|score|scam|money|investment|make money/i.test(text);
       
       const useOpenRouter = provider === "openrouter" || isSensitive;
 
       console.log("🔄 Using Provider:", useOpenRouter ? "OpenRouter" : "Groq");
       console.log("OR_KEY Loaded?", !!OR_KEY);
+      console.log("Model:", useOpenRouter ? "cognitivecomputations/dolphin-mistral-24b-venice-edition:free" : model);
 
       const response = await fetch(
         useOpenRouter 
@@ -1008,10 +1009,28 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
             "Content-Type": "application/json",
             "Authorization": `Bearer ${useOpenRouter ? OR_KEY : GROQ_KEY}`,
             ...(useOpenRouter && { 
-              "HTTP-Referer": "https://kraft-ai.vercel.app",   // Change to your actual domain
+              "HTTP-Referer": "https://kraft-ai.vercel.app", 
               "X-Title": "KRAFT AI" 
             })
           },
+          body: JSON.stringify({
+            model: useOpenRouter 
+              ? "cognitivecomputations/dolphin-mistral-24b-venice-edition:free" 
+              : (attachedImage 
+                  ? "meta-llama/llama-4-scout-17b-16e-instruct" 
+                  : model),
+            max_tokens: smartTokens,
+            messages: messagesPayload,
+            temperature: 0.75
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API Error:", response.status, errorText);
+        throw new Error(`API Error ${response.status}: ${errorText.slice(0, 150)}`);
+      }
           body: JSON.stringify({
             model: useOpenRouter 
               ? "cognitivecomputations/dolphin-mistral-24b-venice-edition:free" 
