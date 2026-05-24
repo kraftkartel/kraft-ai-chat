@@ -825,6 +825,7 @@ export default function App() {
   const [newMsgId, setNewMsgId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [model, setModel] = useState(localStorage.getItem("kraft_model") || "llama-3.3-70b-versatile");
+const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") || "groq");
   const [voiceSettings, setVoiceSettings] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kraft_voice")) || { gender: "female", rate: 1, pitch: 1, tone: "natural" }; } catch { return { gender: "female", rate: 1, pitch: 1, tone: "natural" }; }
   });
@@ -989,20 +990,27 @@ export default function App() {
         : [{ role: "system", content: systemContent }, ...history];
       setAttachedImage(null);
 
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${GROQ_KEY}`
-  },
-  body: JSON.stringify({
-    model: attachedImage 
-  ? "meta-llama/llama-4-scout-17b-16e-instruct" 
-  : model || "llama-3.3-70b-versatile",
-    max_tokens: smartTokens,
-    messages: messagesPayload
-  })
-});
+      const isOpenRouter = provider === "openrouter";
+const response = await fetch(
+  isOpenRouter
+    ? "https://openrouter.ai/api/v1/chat/completions"
+    : "https://api.groq.com/openai/v1/chat/completions",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${isOpenRouter ? OR_KEY : GROQ_KEY}`,
+      ...(isOpenRouter && { "HTTP-Referer": window.location.origin })
+    },
+    body: JSON.stringify({
+      model: attachedImage
+        ? (isOpenRouter ? "meta-llama/llama-4-scout" : "meta-llama/llama-4-scout-17b-16e-instruct")
+        : (isOpenRouter ? "meta-llama/llama-3.3-70b-instruct" : model || "llama-3.3-70b-versatile"),
+      max_tokens: smartTokens,
+      messages: messagesPayload
+    })
+  }
+);
       const data = await response.json();
       if (data.error) throw new Error(data.error.message);
       const aiContent = data.choices?.[0]?.message?.content || "No response.";
