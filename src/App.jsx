@@ -1013,8 +1013,8 @@ const [provider, setProvider] = useState(localStorage.getItem("kraft_provider") 
             })
           },
           body: JSON.stringify({
-                        model: useOpenRouter 
-              ? "qwen/qwen3-8b:free"
+                                    model: useOpenRouter 
+              ? "cognitivecomputations/dolphin-mistral-24b-venice-edition:free"
               : (attachedImage ? "meta-llama/llama-4-scout-17b-16e-instruct" : model),
             max_tokens: smartTokens,
             messages: messagesPayload,
