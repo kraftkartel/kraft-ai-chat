@@ -562,38 +562,6 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
           </div>
         )}
 
-        {/* User Image Preview */}
-        {isUser && attachedImageForThisMsg && (
-          <div style={{ marginBottom: 8, maxWidth: "280px", alignSelf: "flex-end" }}>
-            <img 
-              src={`data:${attachedImageForThisMsg.mime};base64,${attachedImageForThisMsg.base64}`} 
-              alt="Attached" 
-              style={{ 
-                maxWidth: "100%", 
-                borderRadius: "16px 16px 4px 16px",
-                border: `2px solid ${accent}50`,
-                boxShadow: `0 6px 20px ${accent}20`
-              }} 
-            />
-          </div>
-        )}
-
-        {/* User Image Preview */}
-        {isUser && attachedImageForThisMsg && (
-          <div style={{ marginBottom: 8, maxWidth: "280px", alignSelf: "flex-end" }}>
-            <img 
-              src={`data:${attachedImageForThisMsg.mime};base64,${attachedImageForThisMsg.base64}`} 
-              alt="Attached" 
-              style={{ 
-                maxWidth: "100%", 
-                borderRadius: "16px 16px 4px 16px",
-                border: `2px solid ${accent}50`,
-                boxShadow: `0 6px 20px ${accent}20`
-              }} 
-            />
-          </div>
-        )}
-
         {/* Message Bubble */}
         <div style={{
           padding: "14px 18px",
