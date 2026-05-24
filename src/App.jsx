@@ -956,7 +956,9 @@ export default function App() {
           "Authorization": `Bearer ${GROQ_KEY}`
         },
         body: JSON.stringify({
-          model: attachedImage ? "meta-llama/llama-4-maverick-17b-128e-instruct" : model,
+          model: attachedImage 
+  ? "meta-llama/llama-4-scout-17b-16e-instruct" 
+  : model,
           max_tokens: smartTokens,
           messages: messagesPayload
         })
