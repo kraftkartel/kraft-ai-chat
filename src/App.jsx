@@ -466,7 +466,7 @@ function ThinkingDots({ accent }) {
   );
 }
 
-function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSettings }) {
+function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSettings, attachedImageForThisMsg }) {
   const isUser = msg.role === "user";
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(!isStreaming);
@@ -499,7 +499,6 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
     requestAnimationFrame(tick);
   }, [msg.content, isStreaming]);
 
-  // Speak full response when streaming is done
   useEffect(() => {
     if (done && !isUser && voiceMode && msg.content) {
       speakText(msg.content, voiceSettings);
@@ -524,23 +523,39 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
           boxShadow: `0 0 12px ${accent}50`
         }}>K</div>
       )}
-      <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: 4 }}>
+
+      <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: 6 }}>
         {!isUser && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 2 }}>
             <span style={{ fontSize: 11, color: isDark ? "#a78bfa" : "#3a1fa8", letterSpacing: 2, fontWeight: 700 }}>KRAFT AI</span>
-            <button onClick={() => { navigator.clipboard.writeText(msg.content); }} title="Copy" style={{
+            <button onClick={() => navigator.clipboard.writeText(msg.content)} title="Copy" style={{
               background: "none", border: "none", cursor: "pointer", padding: "2px 6px",
-              color: isDark ? "#4b5563" : "#6b665c", fontSize: 13, borderRadius: 6,
-              transition: "color 0.2s"
-            }}
-              onMouseEnter={e => e.currentTarget.style.color = isDark ? "#a78bfa" : "#6c47ff"}
-              onMouseLeave={e => e.currentTarget.style.color = isDark ? "#4b5563" : "#6b665c"}
-            >⎘ copy</button>
+              color: isDark ? "#4b5563" : "#6b665c", fontSize: 13, borderRadius: 6
+            }}>⎘ copy</button>
           </div>
         )}
-        <div style={{ fontSize: 10, color: isDark ? "rgba(255,255,255,0.2)" : "#8c8779", marginTop: 4, paddingLeft: isUser ? 0 : 2, textAlign: isUser ? "right" : "left", letterSpacing: 0.5 }}>
+
+        <div style={{ fontSize: 10, color: isDark ? "rgba(255,255,255,0.2)" : "#8c8779", paddingLeft: isUser ? 0 : 2, textAlign: isUser ? "right" : "left" }}>
           {new Date(msg.ts || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </div>
+
+        {/* User Image Preview */}
+        {isUser && attachedImageForThisMsg && (
+          <div style={{ marginBottom: 8, maxWidth: "280px", alignSelf: "flex-end" }}>
+            <img 
+              src={`data:${attachedImageForThisMsg.mime};base64,${attachedImageForThisMsg.base64}`} 
+              alt="Attached" 
+              style={{ 
+                maxWidth: "100%", 
+                borderRadius: "16px 16px 4px 16px",
+                border: `2px solid ${accent}50`,
+                boxShadow: `0 6px 20px ${accent}20`
+              }} 
+            />
+          </div>
+        )}
+
+        {/* Message Bubble */}
         <div style={{
           padding: "14px 18px",
           borderRadius: isUser ? "20px 20px 6px 20px" : "6px 20px 20px 20px",
@@ -551,14 +566,15 @@ function Message({ msg, isNew, isDark, accent, isStreaming, voiceMode, voiceSett
             ? `1px solid ${accent}50`
             : isDark ? "1px solid rgba(108,71,255,0.15)" : "1px solid #d4d0c5",
           color: isUser ? (isDark ? "#ddd6fe" : "#1a1714") : (isDark ? "#e2e8f0" : "#1f1c17"),
-          fontSize: 14.8, lineHeight: 1.75,
+          fontSize: 14.8,
+          lineHeight: 1.75,
           boxShadow: isUser ? `0 4px 24px ${accent}20` : "0 2px 12px rgba(0,0,0,0.1)",
-          position: "relative"
         }}>
           {isUser ? msg.content : renderMarkdown(content, isDark, accent)}
           {!done && <span style={{display:"inline-block",width:2,height:"1em",background:accent,marginLeft:2,verticalAlign:"middle",animation:"kpulse 0.8s ease-in-out infinite"}}/>}
         </div>
       </div>
+
       {isUser && (
         <div style={{
           width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
@@ -877,7 +893,7 @@ export default function App() {
 
     const currentChat = activeChatRef.current || chats.find(c => c.id === activeChatId);
     if (!currentChat) return;
-    const userMsg = { role: "user", content: text, ts: Date.now() };
+    const userMsg = { role: "user", content: text, ts: Date.now(), _attachedImage: attachedImage || null };
     const updatedMessages = [...currentChat.messages, userMsg];
 
     setChats(prev => prev.map(c => c.id === activeChatId
@@ -1265,7 +1281,17 @@ export default function App() {
           boxSizing: "border-box", minWidth: 0
         }}>
           {activeChat?.messages.map((m, i) => (
-            <Message key={m._key || i} msg={m} isNew={m._key === newMsgId} isDark={isDark} accent={accent} isStreaming={m._key === newMsgId && m.role === "assistant"} voiceMode={voiceMode} voiceSettings={voiceSettings} />
+            <Message 
+              key={m._key || i} 
+              msg={m} 
+              isNew={m._key === newMsgId} 
+              isDark={isDark} 
+              accent={accent} 
+              isStreaming={m._key === newMsgId && m.role === "assistant"} 
+              voiceMode={voiceMode} 
+              voiceSettings={voiceSettings}
+              attachedImageForThisMsg={m.role === "user" && m._attachedImage ? m._attachedImage : null}
+            />
           ))}
           {(isNewChat || showStarters) && (
             <div style={{ padding: "32px 0 8px", animation: "fadeIn 0.5s ease" }}>
